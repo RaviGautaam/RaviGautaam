@@ -1,0 +1,186 @@
+Dim BrowsePath As String
+Dim FileLocation As String
+Dim FileName As String
+Sub SAP_LE_Upload()
+
+
+Dim txt As String
+
+    Dim fd As Office.FileDialog
+    Dim strFile As String
+    Dim fso As New FileSystemObject
+    
+    
+     
+    Set fd = Application.FileDialog(msoFileDialogFolderPicker)
+
+    
+Dim App, Connection, session As Object
+Dim wshell, sApp, SapGuiAuto As Object
+Dim WScript As Object
+
+Set SapGuiAuto = GetObject("SAPGUI")
+Set App = SapGuiAuto.GetScriptingEngine
+Set Connection = App.Children(0)
+Set session = Connection.Children(0)
+On Error Resume Next
+If Not IsObject(SapApplication) Then
+Set SapGuiAuto = GetObject("SAPGUI")
+Set SapApplication = SapGuiAuto.GetScriptingEngine
+End If
+If Not IsObject(Connection) Then
+Set Connection = SapApplication.Children(0)
+End If
+If Not IsObject(session) Then
+Set session = Connection.Children(0)
+End If
+If IsObject(WScript) Then
+WScript.ConnectObject session, "on"
+WScript.ConnectObject SapApplication, "on"
+End If
+
+
+
+
+ 
+   
+    
+    
+
+
+
+
+    'looping through the excel file folder and checking whether it is already uploaded or not
+    
+Set fldr = fso.GetFolder(ThisWorkbook.Path)
+    
+For Each obj_file In fldr.Files
+obj_fil = fso.GetFileName(obj_file.Name)
+
+If UCase(Right(Trim(obj_fil), 4)) = ".MSG" Then
+excel_file = Dir(ThisWorkbook.Path & "\" & "*" & UCase(Left(Trim(obj_fil), Len(Trim(obj_fil)) - 4)) & "*")
+Set xlwb = Workbooks.Open(ThisWorkbook.Path & "\" & excel_file)
+If UCase(xlwb.Sheets(1).Range("A1").Text) Like "*TOTAL DEBITS*" Then
+    If xlwb.Sheets(1).Range("B1").Value = xlwb.Sheets(1).Range("B2").Value Then
+    
+
+
+'Tcode enter st
+session.findById("wnd[0]/tbar[0]/okcd").Text = "/n ZFIGL_JPS"
+'enter
+session.findById("wnd[0]").sendVKey 0
+'select mass journel st
+session.findById("wnd[0]/usr/tbl/BGT/FIGL_JPSTABLIST").getAbsoluteRow(10).Selected = True
+'press execute
+session.findById("wnd[0]/usr/tbl/BGT/FIGL_JPSTABLIST/txtTABLE_LIST-TEXT[0,10]").SetFocus
+session.findById("wnd[0]/usr/tbl/BGT/FIGL_JPSTABLIST/txtTABLE_LIST-TEXT[0,10]").caretPosition = 2
+session.findById("wnd[0]/tbar[1]/btn[8]").press
+session.findById("wnd[0]/tbar[1]/btn[6]").press
+session.findById("wnd[1]/tbar[0]/btn[7]").press
+'template name entry
+session.findById("wnd[2]/usr/ctxtDOCTYPE").Text = "SA_DIV_COM"
+session.findById("wnd[2]/usr/ctxtDOCTYPE").caretPosition = 10
+session.findById("wnd[2]/usr/btnBROWBUT").press
+'deleting thebelow two rows because repeated
+'session.findById("wnd[3]/tbar[0]/btn[12]").press
+'session.findById("wnd[2]/usr/btnBROWBUT").press
+
+Repeat1:
+'directory path entry. making into convert dynamic to static way
+Call BrowseFile("Select JE Parking file")
+
+
+session.findById("wnd[3]/usr/ctxtDY_PATH").Text = FileLocation  ' "C:\Users\cgongqa\OneDrive - CCBAGROUP\Desktop\JE ULOAD\"
+'file name path entry.making into convert dynamic to static way
+session.findById("wnd[3]/usr/ctxtDY_FILENAME").Text = FileName ' "Upload template - CCBSA Test.xls"
+'ok or execute
+session.findById("wnd[3]/usr/ctxtDY_PATH").SetFocus
+session.findById("wnd[3]/usr/ctxtDY_PATH").caretPosition = 55
+'allow button
+session.findById("wnd[3]/tbar[0]/btn[0]").press
+session.findById("wnd[2]/tbar[0]/btn[5]").press
+session.findById("wnd[1]/tbar[0]/btn[5]").press
+session.findById("wnd[0]/tbar[1]/btn[25]").press
+
+'simulation completed or not status ba. based on this msg v have to work next step.
+session.findById("wnd[0]/sbar").DoubleClick
+
+txt = session.findById("wnd[0]/shellcont[1]").Text
+
+session.findById("wnd[0]/shellcont[1]").Close
+
+'Check status weather file is uploaded or not
+If StatusCheck(txt) = False Then GoTo Repeat1
+
+'save button
+session.findById("wnd[0]/tbar[0]/btn[11]").press
+'allow button
+session.findById("wnd[0]/tbar[1]/btn[13]").press
+'mail attachment upload button
+session.findById("wnd[1]/tbar[0]/btn[8]").press
+
+'get Browse Filelocatin and File
+Call BrowseFile("Select JE Parking mail")
+
+MsgBox session.findById("wnd[2]/usr/ctxtDY_PATH").Text
+'mail attachement steps
+session.findById("wnd[2]/usr/ctxtDY_PATH").Text = FileLocation ' "C:\Users\cgongqa\OneDrive - CCBAGROUP\Desktop\JE ULOAD\"
+session.findById("wnd[2]/usr/ctxtDY_FILENAME").Text = FileName ' "FW Upload test journals.msg"
+session.findById("wnd[2]/usr/ctxtDY_FILENAME").caretPosition = 27
+
+session.findById("wnd[2]/tbar[0]/btn[0]").press
+session.findById("wnd[1]/tbar[0]/btn[12]").press
+session.findById("wnd[0]/tbar[1]/btn[25]").press
+'save as complete
+session.findById("wnd[0]/tbar[1]/btn[27]").press
+ 
+ ' as of above the JE parking work completed.  so now have to go back into t code window. by pressing the btn[3] 2 times.
+'session.findById("wnd[0]/shellcont/shell").currentCellColumn = "GDPAD"
+'session.findById("wnd[0]/shellcont/shell").selectedRows = "0"
+'session.findById("wnd[0]/usr/tabsHEADER/tabpHEADER_FC2/ssubHEADER_SCA:/BGT/FIGL_MJP:1002/tbl/BGT/FIGL_MJPHEAD_D/txtSC_HEAD-BELNR[3,0]").SetFocus
+'session.findById("wnd[0]/usr/tabsHEADER/tabpHEADER_FC2/ssubHEADER_SCA:/BGT/FIGL_MJP:1002/tbl/BGT/FIGL_MJPHEAD_D/txtSC_HEAD-BELNR[3,0]").caretPosition = 0
+session.findById("wnd[0]/tbar[0]/btn[3]").press
+session.findById("wnd[0]/tbar[0]/btn[3]").press
+Else
+
+End If
+End If
+End If
+Next obj_file
+
+End Sub
+
+Sub BrowseFile(fTitle As String)
+Dim fd As FileDialog
+
+
+Set fd = Application.FileDialog(msoFileDialogFilePicker)
+With fd
+.Filters.Clear
+.Title = fTitle
+.InitialFileName = Environ("UserProfile")
+.Show
+
+If .SelectedItems.Count > 0 Then
+
+BrowsePath = .SelectedItems(1)
+
+    FileLocation = Left(BrowsePath, InStrRev(BrowsePath, "\"))
+    FileName = Dir(BrowsePath)
+
+Else
+
+    BrowsePath = ""
+
+End If
+End With
+
+Set fd = Nothing
+
+End Sub
+
+Function StatusCheck(sMsg As String) As Boolean
+
+If sMsg = "Complete" Then CheckStatus = True Else CheckStatus = False
+
+End Function
