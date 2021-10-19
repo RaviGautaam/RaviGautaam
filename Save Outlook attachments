@@ -1,0 +1,107 @@
+
+Sub GetFromOutlook()
+Dim mFile, mPath As String
+Dim OutlookApp As Outlook.Application
+Dim OutlookNamespace As Namespace
+Dim SubFolder As MAPIFolder
+Dim e_Items As Outlook.Items
+Dim e_Item As Outlook.MailItem
+Dim Attcmnts As Attachments
+Dim Attcmnt As Attachment
+Dim i As Integer
+Dim AttachementName As String
+Dim msgPath As String
+Dim xlPath As String
+Dim msgFullPath As String
+Dim xlFullPath As String
+
+mFile = ThisWorkbook.Name
+mPath = ThisWorkbook.Path
+
+Set OutlookApp = New Outlook.Application
+Set OutlookNamespace = OutlookApp.GetNamespace("MAPI")
+Set SubFolder = OutlookNamespace.GetDefaultFolder(olFolderInbox).Folders("JE_UPLOAD")
+
+msgPath = mPath '& "\Email_Items" 'Worksheets("Sheet1").Range("msgPath")
+xlPath = mPath '& "\Email_Items" 'Worksheets("Sheet1").Range("xlPath")
+
+If xlPath = "" Then MsgBox "Select both paths to save the files", vbInformation + vbOKOnly, "Invalid": GoTo EndProg
+'
+msgPath = IIf(Right(msgPath, 1) = "\", msgPath, msgPath & "\")
+xlPath = IIf(Right(xlPath, 1) = "\", xlPath, xlPath & "\")
+
+i = 1
+Set e_Items = SubFolder.Items
+e_Items.Sort "[ReceivedTime]", True
+
+For Each e_Item In e_Items
+   
+    With e_Item
+    
+    AttachementName = Format(e_Item.ReceivedTime, "DDMMYYYYHHMMSS") & "_" & e_Item.Subject & ".msg"    '"JE Parking " & Format(.ReceivedTime, "YYYYMMMMDD_HH_MM_SS") & Mid(Attcmnt.FileName, InStrRev(Attcmnt.FileName, "."), 6)
+    msgFullPath = msgPath & AttachementName
+                    
+    If IsFileExist(msgPath) = False Then
+    e_Item.SaveAs msgFullPath, olMSG
+    End If
+        If .Categories <> "Done" And .Attachments.Count > 0 Then
+             C = 1
+            For Each Attcmnt In .Attachments
+                If Attcmnt.FileName Like "*.xl*" Then
+                    AttachementName = C & ". " & Format(e_Item.ReceivedTime, "DDMMYYYYHHMMSS") & "_" & e_Item.Subject & "_" & Attcmnt.FileName  '& Mid(Attcmnt.FileName, InStrRev(Attcmnt.FileName, "."), 6) '"JE Parking " & C & "_" & Format(.ReceivedTime, "YYYYMMMMDD_HH_MM_SS") & Mid(Attcmnt.FileName, InStrRev(Attcmnt.FileName, "."), 6)
+                    xlFullPath = xlPath & AttachementName
+                    If IsFileExist(xlPath) = False Then Attcmnt.SaveAsFile xlFullPath
+                    C = C + 1
+                End If
+            Next Attcmnt
+        
+        End If
+'        .Categories = "Done"
+'        DoEvents
+        i = i + 1
+    End With
+Next e_Item
+
+MsgBox "Program completed", vbInformation + vbOKOnly, "Status"
+EndProg:
+Set Folder = Nothing
+Set OutlookNamespace = Nothing
+Set OutlookApp = Nothing
+
+End Sub
+
+Function IsFileExist(sPath As String) As Boolean
+
+Dim fso As New FileSystemObject
+
+IsFileExist = fso.FileExists(sPath)
+
+Set fso = Nothing
+
+End Function
+
+
+Sub BrowseFolder()
+Dim fd As FileDialog
+
+
+Set fd = Application.FileDialog(msoFileDialogFolderPicker)
+With fd
+
+.InitialFileName = Environ("UserProfile")
+.Show
+.Title = "Select Folder"
+If .SelectedItems.Count > 0 Then
+
+    ActiveCell = .SelectedItems(1)
+Else
+
+    ActiveCell = ""
+
+End If
+
+End With
+
+Set fd = Nothing
+
+End Sub
