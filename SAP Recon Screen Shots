@@ -1,0 +1,1314 @@
+Option Explicit
+Private Declare PtrSafe Sub keybd_event Lib "user32" (ByVal bVk As Byte, ByVal bScan As Byte, ByVal dwFlags As Long, ByVal dwExtraInfo As Long)
+Private Const KEYEVENTF_KEYUP = &H2
+Private Const VK_SNAPSHOT = &H2C
+Private Const VK_MENU = &H12
+
+Sub AltPrintScreen()
+    Dim aLR As Variant
+    Dim mFile As String
+    Dim mPath As String
+    Dim wbRecon, iGL As String
+    mFile = ThisWorkbook.Name
+    mPath = ThisWorkbook.Path
+    wbRecon = Workbooks(mFile).Worksheets("Macro").Range("AZ1").Value
+    iGL = Workbooks(mFile).Worksheets("Macro").Range("J5").Value
+    
+    keybd_event VK_SNAPSHOT, 0, 0, 0
+    Application.Wait (Now + TimeValue("0:00:02"))
+    
+    Workbooks(wbRecon).Worksheets(iGL & " CS").Activate
+    Range("A51").Select
+    ActiveSheet.Paste
+    
+    Application.Wait (Now + TimeValue("0:00:01"))
+End Sub
+
+Sub rReconWorking()
+Dim mFile As String
+Dim mPath As String
+Dim FSO  As New FileSystemObject
+Dim iFolder As Folder
+Dim iFile As File
+Dim tbFileWB As Workbook
+Dim glFileWB As Workbook
+Dim rReconWB As Workbook
+Dim nFolder As Folder
+Dim nFile As File
+Dim newWB As Workbook
+
+Dim pvt As PivotTable
+Dim mPvt As PivotTable
+Dim pvtItem As PivotItem
+Dim pvtCh As PivotCache
+
+Dim rReconSht As Worksheet
+Dim tbSheet As Worksheet
+Dim rTDSheet As Worksheet
+Dim csSheet As Worksheet
+Dim ptSheet As Worksheet
+Dim dlSheet As Worksheet
+Dim rMTSheet As Worksheet
+
+Dim rRconDic As Dictionary
+Dim rSht() As Variant
+'On Error GoTo eErr
+'start time
+StartTime = Timer
+With Application
+    .DisplayAlerts = False
+    .ScreenUpdating = False
+    .EnableEvents = False
+End With
+
+mFile = ThisWorkbook.Name
+mPath = ThisWorkbook.Path
+
+pMonth = Workbooks(mFile).Worksheets("Macro").Range("J3").Value
+fyear = Workbooks(mFile).Worksheets("Macro").Range("J4").Value
+dDate = Workbooks(mFile).Worksheets("Macro").Range("J8").Value
+mEDate = Workbooks(mFile).Worksheets("Macro").Range("J12").Value
+
+'If FSO.FolderExists(mPath & "\" & "Sap Download") = False Then
+'    MkDir (mPath & "\" & "Sap Download")
+'    Sheet1.Range("J7").Value = mPath & "\" & "Sap Download"
+sFld = Workbooks(mFile).Worksheets("Macro").Range("J7").Value
+'End If
+'If FSO.FolderExists(mPath & "\" & "Sap Download") = True Then
+'    Sheet1.Range("J7").Value = mPath & "\" & "Sap Download"
+'    sFld = Workbooks(mFile).Worksheets("Macro").Range("J7").Value
+'End If
+
+Set nFolder = FSO.GetFolder(sFld)
+For Each nFile In nFolder.Files
+    Kill nFile.Path
+Next
+
+rReconFld = Application.GetOpenFilename("Folder,*", , "Select any file from this folder ...!")
+If rReconFld <> vbFalse Then
+rPath = StrReverse(Mid(StrReverse(rReconFld), Application.WorksheetFunction.Find("\", StrReverse(rReconFld), 1), 500))
+
+Set iFolder = FSO.GetFolder(rPath)
+For Each iFile In iFolder.Files
+    Set rReconWB = Workbooks.Open(Filename:=iFile.Name)
+    Workbooks(mFile).Worksheets("Macro").Range("AZ1").Clear
+    Workbooks(mFile).Worksheets("Macro").Range("AZ1").Value = rReconWB.Name
+    ReDim rSht(0 To rReconWB.Sheets.Count)
+    c = 0
+    For Each rReconSht In rReconWB.Worksheets
+        rSht(c) = rReconSht.Name
+        c = c + 1
+    Next rReconSht
+    For x = 0 To UBound(rSht)
+        If InStr(LCase(rSht(x)), "dump") <> 0 Then Set rTDSheet = rReconWB.Worksheets(rSht(x))
+    Next
+    For y = 0 To UBound(rSht)
+        If InStr(LCase(rSht(y)), "matrix") <> 0 Then Set rMTSheet = rReconWB.Worksheets(rSht(y))
+    Next
+    If rTDSheet Is Nothing Then
+        rReconWB.Close
+        GoTo iDown
+    End If
+    If Sheet1.Range("J9").Value = 1100 Then
+        Call SAP.TB_WithNoVariant
+    Else
+        Call SAP.TB_WithVariant
+    End If
+    
+    
+    
+    dnFolder = Workbooks(mFile).Worksheets("Macro").Range("J7").Value
+    tbFileExt = Dir(dnFolder & "\" & "*TB*")
+    'excel_file = Dir(ThisWorkbook.Path & "\" & "*" & UCase(Left(Trim(obj_fil), Len(Trim(obj_fil)) - 4)) & "*")
+    If tbFileExt <> "" Then
+        Set tbFileWB = Workbooks.Open(Filename:=dnFolder & "\" & tbFileExt, ReadOnly:=True)
+    Else
+        rReconWB.Close
+        MsgBox "TB download fail, Task terminated...!"
+        Exit Sub
+    End If
+    tbFileWB.Activate
+    Set tbSheet = tbFileWB.Worksheets(1)
+    tbSheet.Rows("1:8").Delete
+    tbSheet.Range("A:B,D:D,F:G,I:J,L:L,N:N,P:R").Delete
+    tbSheet.AutoFilterMode = False
+    cbe = tbSheet.Range("F" & Rows.Count).End(xlUp).Row
+    tbSheet.Range("A1:F" & cbe).AutoFilter field:=2, Criteria1:="=", Operator:=xlFilterValues
+    tbSheet.Range("A2:F" & cbe).SpecialCells(xlCellTypeVisible).EntireRow.Delete ' Shift:=xlUp
+    
+    tbSheet.AutoFilterMode = False
+    tbSheet.Range("A1:F" & cbe).AutoFilter field:=1, Criteria1:="=" & "*Comp*", Operator:=xlFilterValues
+    tbSheet.Range("A2:F" & cbe).SpecialCells(xlCellTypeVisible).EntireRow.Delete ' Shift:=xlUp
+    tbSheet.AutoFilterMode = False
+    
+    cbe = tbSheet.Range("A" & Rows.Count).End(xlUp).Row
+    tbSheet.Range("H1:H" & cbe).Value = "=IFERROR(NUMBERVALUE(RC[-4]),0)"
+    tbSheet.Range("I1:I" & cbe).Value = "=IFERROR(NUMBERVALUE(RC[-4]),0)"
+    tbSheet.Range("J1:J" & cbe).Value = "=IFERROR(NUMBERVALUE(RC[-4]),0)"
+    
+    tbSheet.Range("H1:J" & cbe).Copy
+    tbSheet.Range("D1").PasteSpecial xlPasteValues
+    tbSheet.Range("A1:F" & cbe).Copy
+    tbSheet.Range("A1").PasteSpecial xlPasteValues
+    cbd = tbSheet.Range("A" & Rows.Count).End(xlUp).Row
+    
+    rTDSheet.Activate
+    
+    rTDSheet.Range("A:Z").ClearContents
+    rTDSheet.Range("A2").Value = "Company Code"
+    rTDSheet.Range("B2").Value = "GL"
+    rTDSheet.Range("C2").Value = "GL Description"
+    rTDSheet.Range("D2").Value = "Posting period_" & Sheet1.Range("J3") & "'" & Sheet1.Range("J4")
+    If Sheet1.Range("J3").Value = 1 Then
+        iP = 12
+        iY = Sheet1.Range("J4").Value - 1
+        rTDSheet.Range("E2").Value = "Posting period_" & iP & "'" & iY
+    Else
+        rTDSheet.Range("E2").Value = "Posting period_" & Sheet1.Range("J3").Value - 1 & "'" & Sheet1.Range("J4").Value
+    End If
+    rTDSheet.Range("F2").Value = "Difference"
+    rTDSheet.Range("G2").Value = "Dr"
+    rTDSheet.Range("H2").Value = "Cr"
+    rTDSheet.Range("I2").Value = "Matrix lookup"
+    rTDSheet.Range("J2").Value = "Variance"
+    rTDSheet.Range("E1") = Sheet1.Range("J8")
+
+    tbSheet.Range("A1:F" & cbe).Copy
+    rTDSheet.Range("A3").PasteSpecial xlPasteValues
+    tLR = rTDSheet.Range("A" & Rows.Count).End(xlUp).Row
+    rTDSheet.Range("G3:G" & tLR).Value = "=IF(D3>0,D3,0)"
+    rTDSheet.Range("H3:H" & tLR).Value = "=IF(D3<0,-D3,0)"
+    rTDSheet.Range("I3:I" & tLR).Value = "=IFERROR(VLOOKUP(B3,'" & rMTSheet.Name & "'!A:P,4,FALSE),0)"
+    rTDSheet.Range("J3:J" & tLR).Value = "=D3-I3"
+    rTDSheet.Range("E1").NumberFormat = "mm/dd/yyyy"
+    rTDSheet.Range("D3:Z" & tLR).Select
+    Selection.Style = "Comma"
+    Cells.Font.Size = 9
+    Columns("D:Z").AutoFit
+    tbFileWB.Close
+    
+    rMTSheet.Activate
+    rMTSheet.Range("A1").Select
+    j = 1
+    Do Until rMTSheet.Cells(j, 1).Value = "GL"
+        j = j + 1
+        rMTSheet.Cells(j, 1).Select
+    Loop
+    glR = rMTSheet.Range("A" & j).End(xlDown).Row
+    eLR = rMTSheet.Range("F" & Rows.Count).End(xlUp).Row
+    
+    rMTSheet.Range("D" & j + 1 & ":D" & glR).Value = "=SUMIFS('TB Dump'!$D:$D,'TB Dump'!$B:$B,$A" & j + 1 & ")"
+    rMTSheet.Range("E" & j + 1 & ":E" & glR).Value = "=SUMIFS('TB Dump'!$E:$E,'TB Dump'!$B:$B,$A" & j + 1 & ")"
+    rMTSheet.Range("F" & j + 1 & ":F" & glR).Value = "=D" & j + 1 & "-E" & j + 1
+    rMTSheet.Range("D" & eLR).Value = "=SUM(D" & j + 1 & ":D" & glR & ")"
+    rMTSheet.Range("E" & eLR).Value = "=SUM(E" & j + 1 & ":E" & glR & ")"
+    rMTSheet.Range("F" & eLR).Value = "=SUM(F" & j + 1 & ":F" & glR & ")"
+    
+        
+    For g = j + 1 To glR
+        glNo = rMTSheet.Cells(g, 1).Value
+        Workbooks(mFile).Worksheets("Macro").Range("J5").Value = glNo
+        For b = 0 To UBound(rSht)
+            If InStr(LCase(rSht(b)), glNo & " cs") <> 0 Then Set csSheet = rReconWB.Worksheets(rSht(b))
+        Next
+        For b = 0 To UBound(rSht)
+            If InStr(LCase(rSht(b)), glNo & " pivot") <> 0 Then Set ptSheet = rReconWB.Worksheets(rSht(b))
+        Next
+        For b = 0 To UBound(rSht)
+            If InStr(LCase(rSht(b)), glNo & " download") <> 0 Then Set dlSheet = rReconWB.Worksheets(rSht(b))
+        Next
+        If csSheet Is Nothing Then
+            rReconWB.Worksheets.Add
+            rReconWB.ActiveSheet.Name = glNo & " CS"
+            Workbooks(mFile).Worksheets("CCBSA CS").Cells.Copy rReconWB.Worksheets(glNo & " CS").Cells(1, 1)
+            Set csSheet = rReconWB.Worksheets(glNo & " CS")
+        End If
+        If ptSheet Is Nothing Then
+            rReconWB.Worksheets.Add
+            rReconWB.ActiveSheet.Name = glNo & " Pivot"
+            Set ptSheet = rReconWB.Worksheets(glNo & " Pivot")
+        End If
+        If dlSheet Is Nothing Then
+            rReconWB.Worksheets.Add
+            rReconWB.ActiveSheet.Name = glNo & " Download"
+            Set dlSheet = rReconWB.Worksheets(glNo & " Download")
+        End If
+        dlSheet.Activate
+        dlSheet.Pictures.Delete
+        dlSheet.Cells.Clear
+        
+        csSheet.Activate
+        iC = csSheet.Pictures.Count
+        For p = 1 To iC
+            If p = iC Then
+                csSheet.Pictures(p).Select
+                csSheet.Pictures(p).Delete
+            End If
+        Next
+        'dlSheet.Pictures.Delete
+        
+        coCod = Sheet1.Range("J9").Value
+        If coCod = 1100 Then
+            Call SAP.GL_NoVariant
+        Else
+            If glNo = 2021301000 Then
+                Call SAP.GL_FBL5N
+            Else
+                Call SAP.GL_WithVariant
+            End If
+        End If
+
+        
+        Call nAgingFormating
+        dlSheet.Cells.Font.Size = 9
+        dlSheet.Columns("A:Z").AutoFit
+        
+        If Sheet1.Range("O5").Value = "P1" Then
+            Call rPivots.rReconFile_1
+        End If
+        If Sheet1.Range("O5").Value = "P2" Then
+            Call rPivots.rReconFile_2
+        End If
+        If Sheet1.Range("O5").Value = "P3" Then
+            Call rPivots.rReconFile_3
+        End If
+        
+        csSheet.Activate
+        csSheet.Range("H4").Value = dDate
+        csSheet.Range("H6").Value = glNo
+        csSheet.Range("F10").Value = "=SUMIFS('TB Dump'!G:G,'TB Dump'!B:B,H6)" 'Debit
+        csSheet.Range("F10").Copy
+        csSheet.Range("F10").PasteSpecial xlPasteValues
+        csSheet.Range("G10").Value = "=SUMIFS('TB Dump'!H:H,'TB Dump'!B:B,H6)" 'Credit
+        csSheet.Range("G10").Copy
+        csSheet.Range("G10").PasteSpecial xlPasteValues
+        
+        Set tbFileWB = Nothing
+        Set dlSheet = Nothing
+        
+    Next g
+    
+rReconWB.Save
+rReconWB.Close
+iDown:
+Set rTDSheet = Nothing
+Set rMTSheet = Nothing
+Next iFile
+Else 'rReconFld
+    MsgBox "Task terminated as no recon file selected from folder...!", vbInformation
+    Exit Sub
+End If 'rReconFld
+With Application
+    .DisplayAlerts = False
+    .ScreenUpdating = False
+    .EnableEvents = False
+End With
+'AppActivate mFile & " - Saved"
+MinutesElapsed = Format((Timer - StartTime) / 86400, "hh:mm:ss")
+MsgBox "Your Activity is successfully completed in :" & Chr(10) & MinutesElapsed & " minutes"
+
+Exit Sub
+'eErr:
+rReconWB.Close
+MsgBox "Task terminated as found some error", vbCritical
+End Sub
+
+
+
+
+Sub GL_NoVariant()
+Dim mFile As String
+Dim mPath As String
+Application.DisplayAlerts = False
+Application.AskToUpdateLinks = False
+
+Dim SapGuiAuto As Object
+Dim SapApplication As Object
+Dim sapConnection  As Object
+Dim session As Object
+
+mFile = ThisWorkbook.Name
+mPath = ThisWorkbook.Path
+
+Set SapGuiAuto = GetObject("SAPGUI")
+Set SapApplication = SapGuiAuto.GetScriptingEngine
+Set sapConnection = SapApplication.Children(0)
+Set session = sapConnection.Children(0)
+
+session.findById("wnd[0]").maximize
+session.findById("wnd[0]/tbar[0]/okcd").Text = "/N FAGLB03"
+session.findById("wnd[0]").sendVKey 0
+'GL details
+session.findById("wnd[0]/usr/ctxtRACCT-LOW").Text = Sheet1.Range("J5") '"2021301000"
+session.findById("wnd[0]/usr/ctxtRBUKRS-LOW").Text = Sheet1.Range("J9") '"1100"
+session.findById("wnd[0]/usr/txtRYEAR").Text = Sheet1.Range("J4") '"2022"
+session.findById("wnd[0]/tbar[1]/btn[8]").press
+
+'select period line#
+session.findById("wnd[0]/usr/cntlFDBL_BALANCE_CONTAINER/shellcont/shell").currentCellRow = Sheet1.Range("J3")
+session.findById("wnd[0]/usr/cntlFDBL_BALANCE_CONTAINER/shellcont/shell").selectedRows = Sheet1.Range("J3")
+
+Dim current As Variant
+current = session.findById("wnd[0]").Text
+'Lposition = Application.WorksheetFunction.Find("0L", session.Find("wnd[0]").Text, 1)
+'ss to be added
+On Error Resume Next
+iScreen = "Regional SAP ECC - CCBSA SAP Portal"
+iScreen2 = "Regional SAP ECC - SAP NetWeaver Portal"
+AppActivate iScreen1
+AppActivate iScreen2
+On Error GoTo 0
+ ''"Balance Display: G/L Accounts For the Ledger 0L"
+session.findById("wnd[0]").maximize
+
+Call SS.AltPrintScreen
+
+session.findById("wnd[0]/usr/cntlFDBL_BALANCE_CONTAINER/shellcont/shell").selectedRows = Sheet1.Range("J3") '"10"
+session.findById("wnd[0]/usr/cntlFDBL_BALANCE_CONTAINER/shellcont/shell").setCurrentCell Sheet1.Range("J3"), "BALANCE"
+session.findById("wnd[0]/usr/cntlFDBL_BALANCE_CONTAINER/shellcont/shell").currentCellColumn = "BALANCE_CUM"
+session.findById("wnd[0]/usr/cntlFDBL_BALANCE_CONTAINER/shellcont/shell").doubleClickCurrentCell
+
+'session.findById("wnd[0]/usr/cntlFDBL_BALANCE_CONTAINER/shellcont/shell").currentCellColumn = "BALANCE_CUM"
+'session.findById("wnd[0]/usr/cntlFDBL_BALANCE_CONTAINER/shellcont/shell").doubleClickCurrentCell
+
+On Error Resume Next
+wrn = session.findById("wnd[1]/usr/btnSPOP-VAROPTION1").Text
+If wrn = "Yes" Then
+session.findById("wnd[1]/usr/btnSPOP-VAROPTION1").press
+'session.findById("wnd[0]/shellcont").Close
+End If
+On Error GoTo 0
+
+session.findById("wnd[0]/tbar[1]/btn[33]").press
+session.findById("wnd[1]/tbar[0]/btn[71]").press
+session.findById("wnd[2]/usr/txtRSYSF-STRING").Text = Sheet1.Range("N5").Value '"CORNE IC ACC" 'Layout
+session.findById("wnd[2]/usr/txtRSYSF-STRING").caretPosition = 12
+session.findById("wnd[2]/tbar[0]/btn[0]").press
+session.findById("wnd[3]/usr/lbl[1,2]").SetFocus
+session.findById("wnd[3]/usr/lbl[1,2]").caretPosition = 7
+session.findById("wnd[3]").sendVKey 2
+session.findById("wnd[1]/tbar[0]/btn[0]").press
+
+On Error Resume Next
+'warngin message
+Dim kk As Variant
+kk = session.findById("wnd[1]/usr/btnSPOP-VAROPTION1").Text
+If kk = "Yes" Then
+session.findById("wnd[1]/usr/btnSPOP-VAROPTION1").press
+session.findById("wnd[0]/sbar").DoubleClick
+session.findById("wnd[0]/shellcont").Close
+End If
+On Error GoTo 0
+
+
+session.findById("wnd[0]/mbar/menu[0]/menu[3]/menu[2]").Select
+session.findById("wnd[1]/usr/subSUBSCREEN_STEPLOOP:SAPLSPO5:0150/sub:SAPLSPO5:0150/radSPOPLI-SELFLAG[1,0]").Select
+session.findById("wnd[1]/usr/subSUBSCREEN_STEPLOOP:SAPLSPO5:0150/sub:SAPLSPO5:0150/radSPOPLI-SELFLAG[1,0]").SetFocus
+session.findById("wnd[1]/tbar[0]/btn[0]").press
+Application.Wait (Now() + TimeSerial(0, 0, 1))
+session.findById("wnd[1]/usr/ctxtDY_PATH").Text = Sheet1.Range("J7") 'cell
+session.findById("wnd[1]/usr/ctxtDY_FILENAME").Text = ""
+
+session.findById("wnd[1]/usr/ctxtDY_FILENAME").Text = Sheet1.Range("J6")
+Application.Wait (Now() + TimeSerial(0, 0, 2))
+session.findById("wnd[1]/usr/ctxtDY_FILENAME").caretPosition = 26
+session.findById("wnd[1]/tbar[0]/btn[0]").press
+
+session.findById("wnd[0]/tbar[0]/btn[3]").press
+session.findById("wnd[0]/tbar[0]/btn[3]").press
+session.findById("wnd[0]/tbar[0]/btn[3]").press
+'session.findById("wnd[0]/tbar[0]/okcd").Text = "/N"
+'session.findById("wnd[0]").sendVKey 0
+
+End Sub
+
+
+Sub GL_WithVariant()
+Dim mFile As String
+Dim mPath As String
+Application.DisplayAlerts = False
+Application.AskToUpdateLinks = False
+
+Dim SapGuiAuto As Object
+Dim SapApplication As Object
+Dim sapConnection  As Object
+Dim session As Object
+
+mFile = ThisWorkbook.Name
+mPath = ThisWorkbook.Path
+
+Set SapGuiAuto = GetObject("SAPGUI")
+Set SapApplication = SapGuiAuto.GetScriptingEngine
+Set sapConnection = SapApplication.Children(0)
+Set session = sapConnection.Children(0)
+
+session.findById("wnd[0]").maximize
+session.findById("wnd[0]/tbar[0]/okcd").Text = "/N FAGLB03"
+session.findById("wnd[0]").sendVKey 0
+session.findById("wnd[0]/mbar/menu[2]/menu[0]/menu[0]").Select
+session.findById("wnd[1]/usr/txtENAME-LOW").Text = "alving01val" 'WithVariant
+session.findById("wnd[1]/usr/txtENAME-LOW").SetFocus
+session.findById("wnd[1]/usr/txtENAME-LOW").caretPosition = 11
+session.findById("wnd[1]/tbar[0]/btn[8]").press
+session.findById("wnd[1]/usr/cntlALV_CONTAINER_1/shellcont/shell").currentCellRow = 2
+session.findById("wnd[1]/usr/cntlALV_CONTAINER_1/shellcont/shell").selectedRows = "2"
+session.findById("wnd[1]/usr/cntlALV_CONTAINER_1/shellcont/shell").doubleClickCurrentCell
+session.findById("wnd[0]/usr/ctxtRACCT-LOW").Text = Sheet1.Range("J5") 'cell
+session.findById("wnd[0]/usr/txtRYEAR").Text = Sheet1.Range("J4") 'cell
+session.findById("wnd[0]/usr/txtRYEAR").SetFocus
+session.findById("wnd[0]/usr/txtRYEAR").caretPosition = 4
+session.findById("wnd[0]/tbar[1]/btn[8]").press
+
+session.findById("wnd[0]/usr/cntlFDBL_BALANCE_CONTAINER/shellcont/shell").currentCellRow = Sheet1.Range("J3")
+session.findById("wnd[0]/usr/cntlFDBL_BALANCE_CONTAINER/shellcont/shell").selectedRows = Sheet1.Range("J3")
+
+Dim current As Variant
+current = session.findById("wnd[0]").Text
+'Lposition = Application.WorksheetFunction.Find("0L", session.Find("wnd[0]").Text, 1)
+'ss to be added
+On Error Resume Next
+iScreen = "Regional SAP ECC - CCBSA SAP Portal"
+iScreen2 = "Regional SAP ECC - SAP NetWeaver Portal"
+AppActivate iScreen1
+AppActivate iScreen2
+On Error GoTo 0
+ ''"Balance Display: G/L Accounts For the Ledger 0L"
+session.findById("wnd[0]").maximize
+
+Call SS.AltPrintScreen
+session.findById("wnd[0]/usr/cntlFDBL_BALANCE_CONTAINER/shellcont/shell").currentCellColumn = "BALANCE_CUM"
+session.findById("wnd[0]/usr/cntlFDBL_BALANCE_CONTAINER/shellcont/shell").doubleClickCurrentCell
+On Error Resume Next
+wrn = session.findById("wnd[1]/usr/btnSPOP-VAROPTION1").Text
+If wrn = "Yes" Then
+session.findById("wnd[1]/usr/btnSPOP-VAROPTION1").press
+'session.findById("wnd[0]/shellcont").Close
+End If
+On Error GoTo 0
+'session.findById("wnd[0]/usr/cntlFDBL_BALANCE_CONTAINER/shellcont/shell").doubleClickCurrentCell
+session.findById("wnd[0]/tbar[1]/btn[33]").press
+session.findById("wnd[1]/usr").verticalScrollbar.Position = 0
+session.findById("wnd[1]/tbar[0]/btn[71]").press
+
+session.findById("wnd[2]/usr/txtRSYSF-STRING").Text = Sheet1.Range("N5").Value '"CORNE IC ACC" 'Layout
+session.findById("wnd[2]/usr/txtRSYSF-STRING").caretPosition = 12
+session.findById("wnd[2]/tbar[0]/btn[0]").press
+If Sheet1.Range("N5").Value = "CORNE C" Then
+    session.findById("wnd[3]/usr/lbl[1,3]").SetFocus
+    session.findById("wnd[3]/usr/lbl[1,3]").caretPosition = 3
+Else
+    session.findById("wnd[3]/usr/lbl[1,2]").SetFocus
+    session.findById("wnd[3]/usr/lbl[1,2]").caretPosition = 3
+End If
+session.findById("wnd[3]").sendVKey 2
+session.findById("wnd[1]/tbar[0]/btn[0]").press
+
+On Error Resume Next
+'warngin message
+Dim kk As Variant
+kk = session.findById("wnd[1]/usr/btnSPOP-VAROPTION1").Text
+If kk = "Yes" Then
+session.findById("wnd[1]/usr/btnSPOP-VAROPTION1").press
+session.findById("wnd[0]/sbar").DoubleClick
+session.findById("wnd[0]/shellcont").Close
+End If
+On Error GoTo 0
+
+
+session.findById("wnd[0]/mbar/menu[0]/menu[3]/menu[2]").Select
+session.findById("wnd[1]/usr/subSUBSCREEN_STEPLOOP:SAPLSPO5:0150/sub:SAPLSPO5:0150/radSPOPLI-SELFLAG[1,0]").Select
+session.findById("wnd[1]/usr/subSUBSCREEN_STEPLOOP:SAPLSPO5:0150/sub:SAPLSPO5:0150/radSPOPLI-SELFLAG[1,0]").SetFocus
+session.findById("wnd[1]/tbar[0]/btn[0]").press
+Application.Wait (Now() + TimeSerial(0, 0, 1))
+session.findById("wnd[1]/usr/ctxtDY_PATH").Text = Sheet1.Range("J7") 'cell
+session.findById("wnd[1]/usr/ctxtDY_FILENAME").Text = ""
+
+session.findById("wnd[1]/usr/ctxtDY_FILENAME").Text = Sheet1.Range("J6")
+Application.Wait (Now() + TimeSerial(0, 0, 2))
+session.findById("wnd[1]/usr/ctxtDY_FILENAME").caretPosition = 26
+session.findById("wnd[1]/tbar[0]/btn[0]").press
+
+session.findById("wnd[0]/tbar[0]/btn[3]").press
+session.findById("wnd[0]/tbar[0]/btn[3]").press
+session.findById("wnd[0]/tbar[0]/btn[3]").press
+'session.findById("wnd[0]/tbar[0]/okcd").Text = "/N"
+'session.findById("wnd[0]").sendVKey 0
+
+End Sub
+
+
+Sub TB_WithNoVariant()
+
+Dim SapGuiAuto As Object
+Dim SapApplication As Object
+Dim sapConnection  As Object
+Dim session As Object
+
+Application.ScreenUpdating = False
+
+Set SapGuiAuto = GetObject("SAPGUI")
+Set SapApplication = SapGuiAuto.GetScriptingEngine
+Set sapConnection = SapApplication.Children(0)
+Set session = sapConnection.Children(0)
+
+Dim current As Variant
+current = session.findById("wnd[0]").Text
+'Lposition = Application.WorksheetFunction.Find("0L", session.Find("wnd[0]").Text, 1)
+'ss to be added
+iScreen = "Regional SAP ECC - CCBSA SAP Portal"
+iScreen2 = "Regional SAP ECC - SAP NetWeaver Portal"
+'application.Application  AppActivate current '"Balance Display: G/L Accounts For the Ledger 0L"
+session.findById("wnd[0]").maximize
+On Error Resume Next
+AppActivate iScreen
+AppActivate iScreen2
+On Error GoTo 0
+'session.findById("wnd[0]").resizeWorkingPane 215, 30, False
+'session.findById("wnd[0]/tbar[0]/okcd").Text = "/N"
+'session.findById("wnd[0]").sendVKey 0
+
+session.findById("wnd[0]/tbar[0]/okcd").Text = "f.01"
+session.findById("wnd[0]/tbar[0]/btn[0]").press
+session.findById("wnd[0]/usr/ctxtSD_KTOPL-LOW").Text = "gtop"
+session.findById("wnd[0]/usr/ctxtSD_BUKRS-LOW").Text = Sheet1.Range("J9").Value '"1100"
+session.findById("wnd[0]/usr/tabsTABSTRIP_TABBL1/tabpUCOM1/ssub%_SUBSCREEN_TABBL1:RFBILA00:0001/ctxtBILAVERS").Text = "gtop"
+session.findById("wnd[0]/usr/tabsTABSTRIP_TABBL1/tabpUCOM1/ssub%_SUBSCREEN_TABBL1:RFBILA00:0001/txtBILBJAHR").Text = Sheet1.Range("J4").Value '"2022"
+session.findById("wnd[0]/usr/tabsTABSTRIP_TABBL1/tabpUCOM1/ssub%_SUBSCREEN_TABBL1:RFBILA00:0001/txtB-MONATE-LOW").Text = "1"
+session.findById("wnd[0]/usr/tabsTABSTRIP_TABBL1/tabpUCOM1/ssub%_SUBSCREEN_TABBL1:RFBILA00:0001/txtB-MONATE-HIGH").Text = Sheet1.Range("J3").Value '"9"
+session.findById("wnd[0]/usr/tabsTABSTRIP_TABBL1/tabpUCOM1/ssub%_SUBSCREEN_TABBL1:RFBILA00:0001/txtBILVJAHR").Text = Sheet1.Range("J4").Value - 1 '"2021"
+session.findById("wnd[0]/usr/tabsTABSTRIP_TABBL1/tabpUCOM1/ssub%_SUBSCREEN_TABBL1:RFBILA00:0001/txtV-MONATE-LOW").Text = "1"
+session.findById("wnd[0]/usr/tabsTABSTRIP_TABBL1/tabpUCOM1/ssub%_SUBSCREEN_TABBL1:RFBILA00:0001/txtV-MONATE-HIGH").Text = Sheet1.Range("J3").Value '"9"
+session.findById("wnd[0]/usr/tabsTABSTRIP_TABBL1/tabpUCOM1/ssub%_SUBSCREEN_TABBL1:RFBILA00:0001/ctxtPLANVERS").SetFocus
+session.findById("wnd[0]/usr/tabsTABSTRIP_TABBL1/tabpUCOM1/ssub%_SUBSCREEN_TABBL1:RFBILA00:0001/ctxtPLANVERS").caretPosition = 0
+session.findById("wnd[0]/tbar[1]/btn[8]").press
+session.findById("wnd[0]/mbar/menu[0]/menu[1]/menu[2]").Select
+session.findById("wnd[1]/usr/subSUBSCREEN_STEPLOOP:SAPLSPO5:0150/sub:SAPLSPO5:0150/radSPOPLI-SELFLAG[1,0]").Select
+session.findById("wnd[1]/usr/subSUBSCREEN_STEPLOOP:SAPLSPO5:0150/sub:SAPLSPO5:0150/radSPOPLI-SELFLAG[1,0]").SetFocus
+session.findById("wnd[1]/tbar[0]/btn[0]").press
+session.findById("wnd[1]/usr/ctxtDY_PATH").Text = Sheet1.Range("J7").Value '"C:\Users\CorneG01mid\OneDrive - CCBAGROUP\Desktop\Recon Testing\SAP Download"
+session.findById("wnd[1]/usr/ctxtDY_FILENAME").Text = Sheet1.Range("J10").Value
+session.findById("wnd[1]/usr/ctxtDY_FILENAME").caretPosition = 9
+session.findById("wnd[1]/tbar[0]/btn[0]").press
+session.findById("wnd[0]/tbar[0]/btn[3]").press
+session.findById("wnd[0]/tbar[0]/btn[3]").press
+
+End Sub
+Sub TB_WithVariant()
+
+Dim SapGuiAuto As Object
+Dim SapApplication As Object
+Dim sapConnection  As Object
+Dim session As Object
+
+Application.ScreenUpdating = False
+Set SapGuiAuto = GetObject("SAPGUI")
+Set SapApplication = SapGuiAuto.GetScriptingEngine
+Set sapConnection = SapApplication.Children(0)
+Set session = sapConnection.Children(0)
+
+Dim current As Variant
+current = session.findById("wnd[0]").Text
+
+iScreen = "Regional SAP ECC - CCBSA SAP Portal"
+iScreen2 = "Regional SAP ECC - SAP NetWeaver Portal"
+'application.Application  AppActivate current '"Balance Display: G/L Accounts For the Ledger 0L"
+session.findById("wnd[0]").maximize
+On Error Resume Next
+AppActivate iScreen
+AppActivate iScreen2
+On Error GoTo 0
+
+session.findById("wnd[0]/tbar[0]/okcd").Text = "f.01"
+session.findById("wnd[0]").sendVKey 0
+session.findById("wnd[0]/mbar/menu[2]/menu[0]/menu[0]").Select
+session.findById("wnd[1]/usr/txtENAME-LOW").Text = "alving01val" 'WithVariant
+session.findById("wnd[1]/usr/txtENAME-LOW").SetFocus
+session.findById("wnd[1]/usr/txtENAME-LOW").caretPosition = 11
+session.findById("wnd[1]/tbar[0]/btn[8]").press
+session.findById("wnd[1]/usr/cntlALV_CONTAINER_1/shellcont/shell").currentCellRow = 1
+session.findById("wnd[1]/usr/cntlALV_CONTAINER_1/shellcont/shell").selectedRows = "1"
+session.findById("wnd[1]/usr/cntlALV_CONTAINER_1/shellcont/shell").doubleClickCurrentCell
+session.findById("wnd[0]/usr/tabsTABSTRIP_TABBL1/tabpUCOM1/ssub%_SUBSCREEN_TABBL1:RFBILA00:0001/txtBILBJAHR").Text = Sheet1.Range("J4").Value '2022 cell
+session.findById("wnd[0]/usr/tabsTABSTRIP_TABBL1/tabpUCOM1/ssub%_SUBSCREEN_TABBL1:RFBILA00:0001/txtB-MONATE-HIGH").Text = Sheet1.Range("J3").Value '"8" 'cell
+Dim cva As Variant
+Dim cvb As Variant
+cva = Sheet1.Range("J4").Value
+If Sheet1.Range("J3").Value = 1 Then
+cva = cva - 1
+End If
+cvb = Sheet1.Range("J3").Value - 1
+If Sheet1.Range("J3").Value = 1 Then
+cvb = 12
+End If
+
+session.findById("wnd[0]/usr/tabsTABSTRIP_TABBL1/tabpUCOM1/ssub%_SUBSCREEN_TABBL1:RFBILA00:0001/txtBILVJAHR").Text = cva '"2022" 'cell
+session.findById("wnd[0]/usr/tabsTABSTRIP_TABBL1/tabpUCOM1/ssub%_SUBSCREEN_TABBL1:RFBILA00:0001/txtV-MONATE-HIGH").Text = cvb '"7" 'cell
+session.findById("wnd[0]/usr/tabsTABSTRIP_TABBL1/tabpUCOM1/ssub%_SUBSCREEN_TABBL1:RFBILA00:0001/txtV-MONATE-HIGH").SetFocus
+session.findById("wnd[0]/usr/tabsTABSTRIP_TABBL1/tabpUCOM1/ssub%_SUBSCREEN_TABBL1:RFBILA00:0001/txtV-MONATE-HIGH").caretPosition = 2
+session.findById("wnd[0]/tbar[1]/btn[8]").press
+session.findById("wnd[0]/tbar[0]/btn[3]").press
+session.findById("wnd[0]/tbar[1]/btn[8]").press
+session.findById("wnd[0]/usr").verticalScrollbar.Position = 536
+session.findById("wnd[0]/mbar/menu[0]/menu[1]/menu[2]").Select
+session.findById("wnd[1]/usr/subSUBSCREEN_STEPLOOP:SAPLSPO5:0150/sub:SAPLSPO5:0150/radSPOPLI-SELFLAG[1,0]").Select
+session.findById("wnd[1]/usr/subSUBSCREEN_STEPLOOP:SAPLSPO5:0150/sub:SAPLSPO5:0150/radSPOPLI-SELFLAG[1,0]").SetFocus
+session.findById("wnd[1]/tbar[0]/btn[0]").press
+session.findById("wnd[1]/usr/ctxtDY_PATH").SetFocus
+
+session.findById("wnd[1]/usr/ctxtDY_PATH").Text = Sheet1.Range("J7").Value '"C:\Users\nlouis\OneDrive - CCBAGROUP\Desktop\Test\"
+session.findById("wnd[1]/usr/ctxtDY_FILENAME").Text = Sheet1.Range("J10").Value
+session.findById("wnd[1]/usr/ctxtDY_FILENAME").SetFocus
+session.findById("wnd[1]/usr/ctxtDY_FILENAME").caretPosition = 13
+session.findById("wnd[1]/tbar[0]/btn[0]").press
+'session.findById("wnd[1]/tbar[0]/btn[0]").press
+session.findById("wnd[0]/tbar[0]/btn[3]").press
+session.findById("wnd[0]/tbar[0]/btn[3]").press
+session.findById("wnd[0]/tbar[0]/btn[3]").press
+End Sub
+Sub GL_FBL5N()
+
+Dim glFile As Workbook
+Application.DisplayAlerts = False
+Set SapGuiAuto = GetObject("SAPGUI")
+Set aApplication = SapGuiAuto.GetScriptingEngine
+Set Connection = aApplication.Children(0)
+Set session = Connection.Children(0)
+
+session.findById("wnd[0]/tbar[0]/okcd").Text = "/N FAGLB03"
+session.findById("wnd[0]").sendVKey 0
+
+
+iScreen = "Regional SAP ECC - CCBSA SAP Portal"
+iScreen2 = "Regional SAP ECC - SAP NetWeaver Portal"
+On Error Resume Next
+AppActivate iScreen
+AppActivate iScreen2
+On Error GoTo 0
+
+session.findById("wnd[0]/tbar[1]/btn[17]").press
+session.findById("wnd[1]/usr/txtENAME-LOW").Text = "AlvinG01VAL"
+session.findById("wnd[1]/usr/txtENAME-LOW").SetFocus
+session.findById("wnd[1]/usr/txtENAME-LOW").caretPosition = 11
+session.findById("wnd[1]/tbar[0]/btn[8]").press
+session.findById("wnd[1]/usr/cntlALV_CONTAINER_1/shellcont/shell").currentCellRow = 2
+session.findById("wnd[1]/usr/cntlALV_CONTAINER_1/shellcont/shell").selectedRows = "2"
+session.findById("wnd[1]/usr/cntlALV_CONTAINER_1/shellcont/shell").doubleClickCurrentCell
+session.findById("wnd[0]/usr/ctxtRACCT-LOW").Text = "2021301000"
+session.findById("wnd[0]/usr/txtRYEAR").Text = Sheet1.Range("J4") '"2022"
+session.findById("wnd[0]/usr/txtRYEAR").SetFocus
+session.findById("wnd[0]/usr/txtRYEAR").caretPosition = 4
+session.findById("wnd[0]/tbar[1]/btn[8]").press
+Application.Wait (Now() + TimeSerial(0, 0, 2))
+Call SS.AltPrintScreen
+
+session.findById("wnd[0]/usr/cntlFDBL_BALANCE_CONTAINER/shellcont/shell").setCurrentCell Sheet1.Range("J3"), "BALANCE"
+'session.findById("wnd[0]/usr/cntlFDBL_BALANCE_CONTAINER/shellcont/shell").currentCellColumn = "BALANCE_CUM"
+'session.findById("wnd[0]/usr/cntlFDBL_BALANCE_CONTAINER/shellcont/shell").selectedRows = Sheet1.Range("J3") '"10"
+
+session.findById("wnd[0]/usr/cntlFDBL_BALANCE_CONTAINER/shellcont/shell").doubleClickCurrentCell
+session.findById("wnd[0]/tbar[1]/btn[33]").press
+session.findById("wnd[1]/tbar[0]/btn[71]").press
+session.findById("wnd[2]/usr/txtRSYSF-STRING").Text = Sheet1.Range("N5") '"/FA_GL recon"
+'session.findById("wnd[1]/usr/lbl[1,20]").SetFocus
+'session.findById("wnd[1]/usr/lbl[1,20]").caretPosition = 3
+'session.findById("wnd[2]/usr/txtRSYSF-STRING").caretPosition = 12
+'session.findById("wnd[0]/usr").verticalScrollbar.Position = 1
+'session.findById("wnd[2]/tbar[0]/btn[0]").press
+'session.findById("wnd[3]").Close
+
+'session.findById("wnd[2]/usr/txtRSYSF-STRING").Text = "CORNEC"
+session.findById("wnd[2]/usr/txtRSYSF-STRING").caretPosition = 0
+session.findById("wnd[2]/tbar[0]/btn[0]").press
+session.findById("wnd[3]/usr/lbl[1,2]").SetFocus
+session.findById("wnd[3]/usr/lbl[1,2]").caretPosition = 3
+session.findById("wnd[3]").sendVKey 2
+session.findById("wnd[1]/tbar[0]/btn[0]").press
+
+
+'session.findById("wnd[1]/usr").verticalScrollbar.Position = 706
+'session.findById("wnd[1]/usr/lbl[1,20]").SetFocus
+'session.findById("wnd[1]/usr/lbl[1,20]").caretPosition = 3
+'session.findById("wnd[1]").sendVKey 2
+'session.findById("wnd[0]/usr").verticalScrollbar.Position = 1
+'session.findById("wnd[0]/usr").verticalScrollbar.Position = 0
+'session.findById("wnd[0]/mbar/menu[0]/menu[3]/menu[1]").Select
+
+session.findById("wnd[0]/mbar/menu[0]/menu[3]/menu[2]").Select
+session.findById("wnd[1]/usr/subSUBSCREEN_STEPLOOP:SAPLSPO5:0150/sub:SAPLSPO5:0150/radSPOPLI-SELFLAG[1,0]").Select
+session.findById("wnd[1]/usr/subSUBSCREEN_STEPLOOP:SAPLSPO5:0150/sub:SAPLSPO5:0150/radSPOPLI-SELFLAG[1,0]").SetFocus
+session.findById("wnd[1]/tbar[0]/btn[0]").press
+Application.Wait (Now() + TimeSerial(0, 0, 1))
+session.findById("wnd[1]/usr/ctxtDY_PATH").Text = Sheet1.Range("J7") 'cell
+session.findById("wnd[1]/usr/ctxtDY_FILENAME").Text = ""
+
+session.findById("wnd[1]/usr/ctxtDY_FILENAME").Text = Sheet1.Range("J6")
+Application.Wait (Now() + TimeSerial(0, 0, 2))
+session.findById("wnd[1]/usr/ctxtDY_FILENAME").caretPosition = 26
+session.findById("wnd[1]/tbar[0]/btn[0]").press
+
+'session.findById("wnd[1]/tbar[0]/btn[0]").press
+'session.findById("wnd[1]").sendVKey 4
+'session.findById("wnd[2]/tbar[0]/btn[0]").press
+'session.findById("wnd[2]").sendVKey 4
+'session.findById("wnd[3]/tbar[0]/btn[0]").press
+'session.findById("wnd[3]/tbar[0]/btn[12]").press
+'session.findById("wnd[2]/tbar[0]/btn[12]").press
+'session.findById("wnd[1]").Close
+session.findById("wnd[0]/tbar[0]/btn[3]").press
+session.findById("wnd[0]/tbar[0]/btn[3]").press
+session.findById("wnd[0]/tbar[0]/btn[3]").press
+
+gN = Sheet1.Range("J5").Value
+glExt = 1 'Dir(Sheet1.Range("J7").Value & "\" & "*" & gN & "*")
+
+If glExt <> "" Then
+    Set glFile = Workbooks.Open(Filename:=Sheet1.Range("J7").Value & "\" & Sheet1.Range("J6").Value, ReadOnly:=True)
+
+    Rows("1:6").Delete
+    
+    Rows(2).Delete
+    For I = 1 To 5
+    For j = I To 26
+    If glFile.Worksheets(1).Cells(1, j).Value = "" Then
+        glFile.Worksheets(1).Columns(j).Delete
+    End If
+    Next
+    
+    Next
+    Columns(1).Delete
+End If
+glFile.Activate
+glR = glFile.Worksheets(1).Range("A1").End(xlDown).Row
+oLR = ThisWorkbook.Worksheets("OpenCustomerNumber").Range("A" & Rows.Count).End(xlUp).Row
+glFile.Worksheets(1).Range("A2:A" & glR).Copy ThisWorkbook.Worksheets("OpenCustomerNumber").Range("A" & oLR + 1)
+
+ThisWorkbook.Worksheets("OpenCustomerNumber").Range("A:A").RemoveDuplicates Columns:=1, Header:=xlYes
+'ActiveSheet.Range("$A$1:$A$134").RemoveDuplicates Columns:=1, Header:=xlNo
+glFile.Close
+
+
+'For the FBL5N data
+session.findById("wnd[0]/tbar[0]/okcd").Text = "/n FBL5N"
+session.findById("wnd[0]").sendVKey 0
+
+'session.findById("wnd[0]/usr/cntlIMAGE_CONTAINER/shellcont/shell/shellcont[0]/shell").selectedNode = "F00104"
+'session.findById("wnd[0]/usr/cntlIMAGE_CONTAINER/shellcont/shell/shellcont[0]/shell").topNode = "F00103"
+'session.findById("wnd[0]/usr/cntlIMAGE_CONTAINER/shellcont/shell/shellcont[0]/shell").doubleClickNode "F00104"
+
+session.findById("wnd[0]/usr/btn%_DD_KUNNR_%_APP_%-VALU_PUSH").press
+
+oLR = ThisWorkbook.Worksheets("OpenCustomerNumber").Range("A" & Rows.Count).End(xlUp).Row
+ThisWorkbook.Worksheets("OpenCustomerNumber").Range("A1:A" & oLR).Copy
+session.findById("wnd[1]/tbar[0]/btn[24]").press
+
+'session.findById("wnd[1]/tbar[0]/btn[8]").press
+session.findById("wnd[1]/tbar[0]/btn[8]").press
+session.findById("wnd[0]/usr/ctxtPA_STIDA").Text = Format(Sheet1.Range("J12"), "dd.mm.yyyy") '"("J6")'"27.10.2021"
+session.findById("wnd[0]/usr/ctxtPA_STIDA").SetFocus
+session.findById("wnd[0]/usr/ctxtPA_STIDA").caretPosition = 10
+session.findById("wnd[0]/tbar[1]/btn[8]").press
+session.findById("wnd[0]/tbar[1]/btn[33]").press
+'session.findById("wnd[1]/usr").verticalScrollbar.Position = 354
+'session.findById("wnd[1]/usr/lbl[1,3]").SetFocus
+'session.findById("wnd[1]/usr/lbl[1,3]").caretPosition = 3
+
+session.findById("wnd[1]/tbar[0]/btn[71]").press
+session.findById("wnd[2]/usr/txtRSYSF-STRING").Text = "CORNE AR" 'Sheet1.Range("N5")
+
+session.findById("wnd[2]/usr/txtRSYSF-STRING").caretPosition = 0
+session.findById("wnd[2]/tbar[0]/btn[0]").press
+session.findById("wnd[3]/usr/lbl[1,2]").SetFocus
+session.findById("wnd[3]/usr/lbl[1,2]").caretPosition = 3
+session.findById("wnd[3]").sendVKey 2
+session.findById("wnd[1]/tbar[0]/btn[0]").press
+
+
+
+'session.findById("wnd[1]").sendVKey 2
+'session.findById("wnd[0]/tbar[1]/btn[33]").press
+
+'session.findById("wnd[1]/usr").verticalScrollbar.Position = 353
+'session.findById("wnd[1]/usr").verticalScrollbar.Position = 352
+'session.findById("wnd[1]/usr/lbl[1,5]").SetFocus
+'session.findById("wnd[1]/usr/lbl[1,5]").caretPosition = 6
+'session.findById("wnd[1]").sendVKey 2
+'session.findById("wnd[0]/mbar/menu[0]/menu[3]/menu[1]").Select
+session.findById("wnd[0]/mbar/menu[0]/menu[3]/menu[2]").Select
+
+'session.findById("wnd[0]/mbar/menu[0]/menu[3]/menu[2]").Select
+session.findById("wnd[1]/usr/subSUBSCREEN_STEPLOOP:SAPLSPO5:0150/sub:SAPLSPO5:0150/radSPOPLI-SELFLAG[1,0]").Select
+session.findById("wnd[1]/usr/subSUBSCREEN_STEPLOOP:SAPLSPO5:0150/sub:SAPLSPO5:0150/radSPOPLI-SELFLAG[1,0]").SetFocus
+session.findById("wnd[1]/tbar[0]/btn[0]").press
+session.findById("wnd[1]/usr/ctxtDY_PATH").Text = Sheet1.Range("J7").Value '"C:\Users\CorneG01mid\OneDrive - CCBAGROUP\Desktop\Recon Testing\SAP Download"
+session.findById("wnd[1]/usr/ctxtDY_FILENAME").Text = "FB_" & Sheet1.Range("J6").Value '"FB_2021301000_10_2022.xls"
+session.findById("wnd[1]/usr/ctxtDY_FILENAME").caretPosition = 25
+
+fb = Dir(Sheet1.Range("J7").Value & "\" & "*" & "FB_" & Sheet1.Range("J6").Value & "*")
+If fb = "" Then
+    session.findById("wnd[1]/tbar[0]/btn[0]").press
+Else
+    session.findById("wnd[1]/tbar[0]/btn[11]").press
+End If
+session.findById("wnd[0]/tbar[0]/btn[3]").press
+session.findById("wnd[0]/tbar[0]/btn[3]").press
+
+'session.findById("wnd[1]/usr/subSUBSCREEN_STEPLOOP:SAPLSPO5:0150/sub:SAPLSPO5:0150/radSPOPLI-SELFLAG[1,0]").Select
+'session.findById("wnd[1]/usr/subSUBSCREEN_STEPLOOP:SAPLSPO5:0150/sub:SAPLSPO5:0150/radSPOPLI-SELFLAG[1,0]").SetFocus
+'session.findById("wnd[1]/tbar[0]/btn[0]").press
+'Application.Wait (Now() + TimeSerial(0, 0, 1))
+'session.findById("wnd[1]/usr/ctxtDY_PATH").Text = Sheet1.Range("J7") 'cell
+'session.findById("wnd[1]/usr/ctxtDY_FILENAME").Text = ""
+'
+'session.findById("wnd[1]/usr/ctxtDY_FILENAME").Text = "FB_" & Sheet1.Range("J6")
+'Application.Wait (Now() + TimeSerial(0, 0, 2))
+'session.findById("wnd[1]/usr/ctxtDY_FILENAME").caretPosition = 26
+'session.findById("wnd[1]/tbar[0]/btn[0]").press
+
+'session.findById("wnd[1]/tbar[0]/btn[0]").press
+'session.findById("wnd[1]/usr/ctxtDY_PATH").SetFocus
+'session.findById("wnd[1]/usr/ctxtDY_PATH").caretPosition = 0
+'session.findById("wnd[1]").sendVKey 4
+'session.findById("wnd[2]/usr/ctxtDY_PATH").SetFocus
+'session.findById("wnd[2]/usr/ctxtDY_PATH").caretPosition = 0
+'session.findById("wnd[2]").sendVKey 4
+'session.findById("wnd[3]/usr/ctxtDY_FILENAME").Text = "1export.MHTML"
+'session.findById("wnd[3]/usr/ctxtDY_FILENAME").caretPosition = 1
+'session.findById("wnd[3]/tbar[0]/btn[0]").press
+'session.findById("wnd[2]/tbar[0]/btn[12]").press
+'session.findById("wnd[1]/tbar[0]/btn[11]").press
+'session.findById("wnd[0]/usr/lbl[56,23]").SetFocus
+'session.findById("wnd[0]/usr/lbl[56,23]").caretPosition = 2
+'session.findById("wnd[0]/tbar[0]/btn[3]").press
+'session.findById("wnd[0]/tbar[0]/btn[3]").press
+'session.findById("wnd[0]/tbar[0]/btn[3]").press
+Application.DisplayAlerts = True
+End Sub
+
+Sub nAgingFormating()
+Dim mFile As String
+Dim mPath As String
+Dim rTempWb As Workbook
+Dim rGL_Dn_Wb As Workbook
+Dim aAgingSht As Worksheet
+
+mFile = ThisWorkbook.Name
+mPath = ThisWorkbook.Path
+
+Set rTempWb = Workbooks(Sheet1.Range("AZ1").Value)
+
+Set aAgingSht = ThisWorkbook.Worksheets("FY AgingBucket")
+
+gN = Sheet1.Range("J5").Value
+'Set glSapDataSht = Workbooks(rRconFileName).Worksheets(gN & "Download")
+'Set glPivotSht = Workbooks(rRconFileName).Worksheets(gN & "Pivot")
+
+glExt = Dir(Sheet1.Range("J7").Value & "\" & "*" & "FB_" & gN & "*")
+    
+If glExt = "" Then
+    glExt = Dir(Sheet1.Range("J7").Value & "\" & "*" & gN & "*")
+End If
+
+If glExt <> "" Then
+    Set rGL_Dn_Wb = Workbooks.Open(Filename:=Sheet1.Range("J7").Value & "\" & glExt, ReadOnly:=True)
+    If Left(glExt, 2) = "FB" Then
+        Rows("1:10").Delete
+        Rows(2).Delete
+        For I = 1 To 5
+            For j = I To 26
+            If rGL_Dn_Wb.Worksheets(1).Cells(1, j).Value = "" Then
+                rGL_Dn_Wb.Worksheets(1).Columns(j).Delete
+            End If
+            Next
+        Next
+    Else
+        Rows("1:6").Delete
+        Rows(2).Delete
+        For I = 1 To 5
+            For j = I To 26
+            If rGL_Dn_Wb.Worksheets(1).Cells(1, j).Value = "" Then
+                rGL_Dn_Wb.Worksheets(1).Columns(j).Delete
+            End If
+            Next
+        Next
+    End If
+
+    Columns(1).Delete
+    For h = 1 To 14
+        If rGL_Dn_Wb.Worksheets(1).Cells(1, h).Value = "Account" Then
+            rGL_Dn_Wb.Worksheets(1).Cells(1, h).Value = "Customer"
+        End If
+        If rGL_Dn_Wb.Worksheets(1).Cells(1, h).Value = "   Amt in loc.cur." Then
+            rGL_Dn_Wb.Worksheets(1).Cells(1, h).Value = "Amount in local cur."
+        End If
+    Next
+    aLR = rGL_Dn_Wb.Worksheets(1).Range("A1").End(xlDown).Row
+    On Error Resume Next
+    Cust = WorksheetFunction.IfError(WorksheetFunction.Match("Customer", rGL_Dn_Wb.Worksheets(1).Range(1 & ":" & 1), 0), 0)
+    On Error GoTo 0
+    If Cust <> 0 Then
+       cAdd = rGL_Dn_Wb.Worksheets(1).Cells(1, Cust).Address
+       rGL_Dn_Wb.Worksheets(1).Columns(Cust + 1).EntireColumn.Insert
+       rGL_Dn_Wb.Worksheets(1).Cells(1, Cust + 1).Value = "Customer Name"
+       rGL_Dn_Wb.Worksheets(1).Range(Cells(2, Cust + 1), Cells(aLR, Cust + 1)).Value = "=VLOOKUP(" & Left(cAdd, 2) & "2,'[" & mFile & "]Config'!$Q:$R,2,FALSE)"
+       rGL_Dn_Wb.Worksheets(1).Range(Cells(2, Cust + 1), Cells(aLR, Cust + 1)).Copy
+       rGL_Dn_Wb.Worksheets(1).Cells(2, Cust + 1).PasteSpecial xlPasteValues
+    End If
+    iDType = Sheet1.Range("L5").Value
+    On Error Resume Next
+    Dt = WorksheetFunction.IfError(WorksheetFunction.Match(iDType, rGL_Dn_Wb.Worksheets(1).Range(1 & ":" & 1), 0), 0)
+    On Error GoTo 0
+    If iDType <> 0 Then
+        dAdd = rGL_Dn_Wb.Worksheets(1).Cells(1, Dt).Address
+        Columns(Dt + 1).EntireColumn.Insert
+        Cells(1, Dt + 1).Value = "Ageing"
+        Columns(Dt).Select
+        Selection.TextToColumns Destination:=Cells(1, Dt), DataType:=xlDelimited, TextQualifier:=xlDoubleQuote, ConsecutiveDelimiter:=False, Tab:=True, Semicolon:=False, Comma:=False, Space:=False, Other:=False, FieldInfo:=Array(1, 4), TrailingMinusNumbers:=True
+        rGL_Dn_Wb.Worksheets(1).Range("AA1").Value = Sheet1.Range("J12").Value
+        aBucket = Int(Left(Sheet1.Range("M5").Value, WorksheetFunction.Find("+", Sheet1.Range("M5").Value, 1) - 1))
+        glR = rGL_Dn_Wb.Worksheets(1).Range("A1").End(xlDown).Row
+        fLR = Sheet6.Range("C" & Rows.Count).End(xlUp).Row
+        For j = 2 To glR
+            iDt = rGL_Dn_Wb.Worksheets(1).Cells(j, Dt).Value
+            
+            For b = 2 To fLR
+                If Sheet6.Range("D" & b).Value >= iDt And Sheet6.Range("C" & b).Value <= iDt Then
+                    If aBucket = 180 Then
+                        bkt = Sheet6.Range("E" & b).Value
+                        Exit For
+                    End If
+                    If aBucket = 120 Then
+                        bkt = Sheet6.Range("F" & b).Value
+                        Exit For
+                    End If
+                End If
+            Next
+            
+            rGL_Dn_Wb.Worksheets(1).Cells(j, Dt + 1).Value = bkt
+            bkt = ""
+        Next
+        ActiveSheet.AutoFilterMode = False
+        rGL_Dn_Wb.Worksheets(1).Cells.AutoFilter field:=Dt + 1, Criteria1:="", Operator:=xlFilterValues
+        nIR = rGL_Dn_Wb.Worksheets(1).Cells(1, Dt).End(xlDown).Row
+        If nIR >= 2 And aLR >= nIR Then
+            If aBucket = 180 Then
+                
+                rGL_Dn_Wb.Worksheets(1).Range(Cells(2, Dt + 1), Cells(aLR, Dt + 1)).SpecialCells(xlCellTypeVisible).Value = ">180 days"
+                ActiveSheet.AutoFilterMode = False
+                rGL_Dn_Wb.Worksheets(1).Range(Cells(2, Dt + 1), Cells(aLR, Dt + 1)).Copy
+                rGL_Dn_Wb.Worksheets(1).Cells(2, Dt + 1).PasteSpecial xlPasteValues
+            End If
+            If aBucket = 120 And aLR >= nIR Then
+                rGL_Dn_Wb.Worksheets(1).Range(Cells(2, Dt + 1), Cells(aLR, Dt + 1)).SpecialCells(xlCellTypeVisible).Value = ">120 days"
+                ActiveSheet.AutoFilterMode = False
+                rGL_Dn_Wb.Worksheets(1).Range(Cells(2, Dt + 1), Cells(aLR, Dt + 1)).Copy
+                rGL_Dn_Wb.Worksheets(1).Cells(2, Dt + 1).PasteSpecial xlPasteValues
+            End If
+        End If
+    ActiveSheet.AutoFilterMode = False
+'        If aBucket = 90 Then
+'            rGL_Dn_Wb.Worksheets(1).Range(Cells(2, Dt + 1), Cells(aLR, Dt + 1)).Value = "=IFS($AA$1-" & Left(dAdd, 2) & "2<=0,""Current"",$AA$1-" & Left(dAdd, 2) & "2<=30,""30 days"",$AA$1-" & Left(dAdd, 2) & "2<=60,""60 days"",$AA$1-" & Left(dAdd, 2) & "2<=90,""90 days"",$AA$1-" & Left(dAdd, 2) & "2>90,"">90 days"")"
+'            rGL_Dn_Wb.Worksheets(1).Range(Cells(2, Dt + 1), Cells(aLR, Dt + 1)).Copy
+'            rGL_Dn_Wb.Worksheets(1).Cells(2, Dt + 1).PasteSpecial xlPasteValues
+'        End If
+'        If aBucket = 120 Then
+'            rGL_Dn_Wb.Worksheets(1).Range(Cells(2, Dt + 1), Cells(aLR, Dt + 1)).Value = "=IFS($AA$1-" & Left(dAdd, 2) & "2<=0,""Current"",$AA$1-" & Left(dAdd, 2) & "2<=30,""30 days"",$AA$1-" & Left(dAdd, 2) & "2<=60,""60 days"",$AA$1-" & Left(dAdd, 2) & "2<=90,""90 days"",$AA$1-" & Left(dAdd, 2) & "2<=120,""120 days"",$AA$1-" & Left(dAdd, 2) & "2>120,"">120 days"")"
+'            rGL_Dn_Wb.Worksheets(1).Range(Cells(2, Dt + 1), Cells(aLR, Dt + 1)).Copy
+'            rGL_Dn_Wb.Worksheets(1).Cells(2, Dt + 1).PasteSpecial xlPasteValues
+'        End If
+'        If aBucket = 180 Then
+'            rGL_Dn_Wb.Worksheets(1).Range(Cells(2, Dt + 1), Cells(aLR, Dt + 1)).Value = "=IFS($AA$1-" & Left(dAdd, 2) & "2<=0,""Current"",$AA$1-" & Left(dAdd, 2) & "2<=30,""30 days"",$AA$1-" & Left(dAdd, 2) & "2<=60,""60 days"",$AA$1-" & Left(dAdd, 2) & "2<=90,""90 days"",$AA$1-" & Left(dAdd, 2) & "2<=120,""120 days"",$AA$1-" & Left(dAdd, 2) & "2<=180,""180 days"",$AA$1-" & Left(dAdd, 2) & "2>180,"">180 days"")"
+'            rGL_Dn_Wb.Worksheets(1).Range(Cells(2, Dt + 1), Cells(aLR, Dt + 1)).Copy
+'            rGL_Dn_Wb.Worksheets(1).Cells(2, Dt + 1).PasteSpecial xlPasteValues
+'        End If
+'        If aBucket = 270 Then
+'            rGL_Dn_Wb.Worksheets(1).Range(Cells(2, Dt + 1), Cells(aLR, Dt + 1)).Value = "=IFS($AA$1-" & Left(dAdd, 2) & "2<=0,""Current"",$AA$1-" & Left(dAdd, 2) & "2<=30,""30 days"",$AA$1-" & Left(dAdd, 2) & "2<=60,""60 days"",$AA$1-" & Left(dAdd, 2) & "2<=90,""90 days"",$AA$1-" & Left(dAdd, 2) & "2<=120,""120 days"",$AA$1-" & Left(dAdd, 2) & "2<=180,""180 days"",$AA$1-" & Left(dAdd, 2) & "2<=270,""270 days"",$AA$1-" & Left(dAdd, 2) & "2>270,"">270 days"")"
+'            rGL_Dn_Wb.Worksheets(1).Range(Cells(2, Dt + 1), Cells(aLR, Dt + 1)).Copy
+'            rGL_Dn_Wb.Worksheets(1).Cells(2, Dt + 1).PasteSpecial xlPasteValues
+'        End If
+    End If
+    rGL_Dn_Wb.Worksheets(1).Range("AA1").Value = ""
+    On Error Resume Next
+    pCnt = WorksheetFunction.IfError(WorksheetFunction.Match("Profit Ctr", rGL_Dn_Wb.Worksheets(1).Range(1 & ":" & 1), 0), 0)
+    On Error GoTo 0
+    If pCnt <> 0 Then
+        pAdd = rGL_Dn_Wb.Worksheets(1).Cells(1, pCnt).Address
+        rGL_Dn_Wb.Worksheets(1).Columns(pCnt + 1).EntireColumn.Insert
+        rGL_Dn_Wb.Worksheets(1).Cells(1, pCnt + 1).Value = "FM Responsible"
+        rGL_Dn_Wb.Worksheets(1).Range(Cells(2, pCnt + 1), Cells(aLR, pCnt + 1)).Value = "=VLOOKUP(" & Left(pAdd, 2) & "2,'[" & mFile & "]Config'!$L:$M,2,FALSE)"
+        rGL_Dn_Wb.Worksheets(1).Range(Cells(2, pCnt + 1), Cells(aLR, pCnt + 1)).Copy
+        rGL_Dn_Wb.Worksheets(1).Cells(2, pCnt + 1).PasteSpecial xlPasteValues
+    End If
+    On Error Resume Next
+    aAmt = WorksheetFunction.IfError(WorksheetFunction.Match("Amount in local cur.", rGL_Dn_Wb.Worksheets(1).Range(1 & ":" & 1), 0), 0)
+    On Error GoTo 0
+    If aAmt <> 0 Then
+        rGL_Dn_Wb.Worksheets(1).Columns(aAmt).Select
+        Selection.Style = "Comma"
+    End If
+rGL_Dn_Wb.Worksheets(1).Activate
+aLC = rGL_Dn_Wb.Worksheets(1).Cells(1, Columns.Count).End(xlToLeft).Column
+rGL_Dn_Wb.Worksheets(1).Range(Cells(1, 1), Cells(aLR, aLC)).Copy rTempWb.Worksheets(gN & " Download").Range("A1")
+rTempWb.Worksheets(gN & " Download").Activate
+'.PasteSpecial xlPasteValues
+rGL_Dn_Wb.Activate
+rGL_Dn_Wb.Close
+Else
+    msg = "For GL# " & gN & " extract file not found in SAP download folder...!"
+End If
+
+End Sub
+
+Sub rReconFile_1()
+Dim mFile As String
+Dim mPath As String
+
+Dim pvt As PivotTable
+Dim mPvt As PivotTable
+Dim pvtItem As PivotItem
+Dim pvtCh As PivotCache
+Dim pf As PivotField
+
+Dim glSapDataSht As Worksheet
+Dim glPivotSht As Worksheet
+
+mFile = ThisWorkbook.Name
+mPath = ThisWorkbook.Path
+
+rRconFileName = Workbooks(mFile).Worksheets("Macro").Range("AZ1").Value
+gN = Sheet1.Range("J5").Value
+Set glSapDataSht = Workbooks(rRconFileName).Worksheets(gN & " Download")
+Set glPivotSht = Workbooks(rRconFileName).Worksheets(gN & " Pivot")
+
+glPivotSht.Activate
+For Each pvt In glPivotSht.PivotTables
+    ptAdd = pvt.TableRange1.Address
+    Range(ptAdd).Clear
+Next
+        
+pLR = glSapDataSht.Range("A" & Rows.Count).End(xlUp).Row
+xLC = glSapDataSht.Cells(1, Columns.Count).End(xlToLeft).Column
+
+ActiveWorkbook.PivotCaches.Create(SourceType:=xlDatabase, SourceData:="'" & glSapDataSht.Name & "'" & "!R1C1:R" & pLR & "C" & xLC, Version:=6).CreatePivotTable TableDestination:="'" & glPivotSht.Name & "'" & "!R3C1", TableName:="Aging", DefaultVersion:=6
+        
+Set mPvt = glPivotSht.Cells(3, 1).PivotTable
+
+mPvt.PivotFields("FM Responsible").Orientation = xlRowField
+mPvt.PivotFields("FM Responsible").Position = 1
+
+mPvt.PivotFields("Customer").Orientation = xlRowField
+mPvt.PivotFields("Customer").Position = 2
+
+mPvt.PivotFields("Customer Name").Orientation = xlRowField
+mPvt.PivotFields("Customer Name").Position = 3
+
+mPvt.PivotFields("Ageing").Orientation = xlColumnField
+mPvt.PivotFields("Ageing").Position = 1
+
+mPvt.AddDataField mPvt.PivotFields("Amount in local cur."), "Sum Amount in local cur.", xlSum
+
+With mPvt
+    .InGridDropZones = True
+    .RowAxisLayout xlTabularRow
+End With
+
+pLC = glPivotSht.Cells(4, Columns.Count).End(xlToLeft).Column
+mPvt.PivotSelect "Current", xlDataAndLabel, True
+mPvt.PivotFields("Ageing").PivotItems("Current").Position = 1
+xP = 1
+For p = 1 To 27
+    iDay = p & "0 days"
+    For l = 1 To 15
+        If LCase(glPivotSht.Cells(4, l).Value) = iDay Then
+            xP = xP + 1
+            mPvt.PivotSelect iDay, xlDataAndLabel, True
+            mPvt.PivotFields("Ageing").PivotItems(iDay).Position = xP
+        End If
+    Next
+Next
+With mPvt
+    For Each pf In .PivotFields
+        pf.Subtotals(1) = True
+        pf.Subtotals(1) = False
+        Exit For
+    Next pf
+End With
+ 
+mPvt.PivotFields("FM Responsible").AutoSort Order:=xlDescending, field:="Sum of Amount in local cur."
+glPivotSht.Activate
+glPivotSht.Columns("C:P").Select
+Selection.Style = "Comma"
+glPivotSht.Cells.Font.Size = 9
+glPivotSht.Columns("A:Z").AutoFit
+Workbooks(rRconFileName).Save
+Set mPvt = Nothing
+Set glPivotSht = Nothing
+
+End Sub
+
+Sub rReconFile_2()
+Dim mFile As String
+Dim mPath As String
+
+Dim pvt As PivotTable
+Dim mPvt As PivotTable
+Dim pvtItem As PivotItem
+Dim pvtCh As PivotCache
+
+Dim glSapDataSht As Worksheet
+Dim glPivotSht As Worksheet
+
+mFile = ThisWorkbook.Name
+mPath = ThisWorkbook.Path
+
+rRconFileName = Workbooks(mFile).Worksheets("Macro").Range("AZ1").Value
+gN = Sheet1.Range("J5").Value
+Set glSapDataSht = Workbooks(rRconFileName).Worksheets(gN & " Download")
+Set glPivotSht = Workbooks(rRconFileName).Worksheets(gN & " Pivot")
+
+glPivotSht.Activate
+For Each pvt In glPivotSht.PivotTables
+    ptAdd = pvt.TableRange1.Address
+    Range(ptAdd).Clear
+Next
+        
+pLR = glSapDataSht.Range("A" & Rows.Count).End(xlUp).Row
+xLC = glSapDataSht.Cells(1, Columns.Count).End(xlToLeft).Column
+
+ActiveWorkbook.PivotCaches.Create(SourceType:=xlDatabase, SourceData:="'" & glSapDataSht.Name & "'" & "!R1C1:R" & pLR & "C" & xLC, Version:=6).CreatePivotTable TableDestination:="'" & glPivotSht.Name & "'" & "!R3C1", TableName:="Aging", DefaultVersion:=6
+        
+Set mPvt = glPivotSht.Cells(3, 1).PivotTable
+
+With mPvt.PivotCache
+    .RefreshOnFileOpen = False
+    .MissingItemsLimit = xlMissingItemsDefault
+End With
+mPvt.RepeatAllLabels xlRepeatLabels
+
+With mPvt.PivotFields("FM Responsible")
+    .Orientation = xlRowField
+    .Position = 1
+End With
+
+With mPvt.PivotFields("Assignment")
+    .Orientation = xlRowField
+    .Position = 2
+End With
+        
+mPvt.AddDataField mPvt.PivotFields("Amount in local cur."), "Sum of Amount in local cur.", xlSum
+
+With mPvt.PivotFields("Ageing")
+    .Orientation = xlColumnField
+    .Position = 1
+End With
+
+Range("D8").Select
+
+With mPvt
+    .InGridDropZones = True
+    .RowAxisLayout xlTabularRow
+End With
+
+pLC = glPivotSht.Cells(4, Columns.Count).End(xlToLeft).Column
+mPvt.PivotSelect "Current", xlDataAndLabel, True
+mPvt.PivotFields("Ageing").PivotItems("Current").Position = 1
+xP = 1
+For p = 1 To 27
+    iDay = p & "0 days"
+    For l = 1 To 15
+        If LCase(glPivotSht.Cells(4, l).Value) = iDay Then
+            xP = xP + 1
+            mPvt.PivotSelect iDay, xlDataAndLabel, True
+            mPvt.PivotFields("Ageing").PivotItems(iDay).Position = xP
+        End If
+    Next
+Next
+
+mPvt.PivotFields("FM Responsible").AutoSort Order:=xlDescending, field:="Sum of Amount in local cur."
+glPivotSht.Activate
+glPivotSht.Columns("C:P").Select
+Selection.Style = "Comma"
+glPivotSht.Cells.Font.Size = 9
+glPivotSht.Columns("A:Z").AutoFit
+Workbooks(rRconFileName).Save
+Set mPvt = Nothing
+Set glPivotSht = Nothing
+
+End Sub
+
+Sub rReconFile_3()
+Dim mFile As String
+Dim mPath As String
+
+Dim pvt As PivotTable
+Dim mPvt As PivotTable
+Dim pvtItem As PivotItem
+Dim pvtCh As PivotCache
+
+Dim glSapDataSht As Worksheet
+Dim glPivotSht As Worksheet
+
+mFile = ThisWorkbook.Name
+mPath = ThisWorkbook.Path
+
+rRconFileName = Workbooks(mFile).Worksheets("Macro").Range("AZ1").Value
+gN = Sheet1.Range("J5").Value
+Set glSapDataSht = Workbooks(rRconFileName).Worksheets(gN & " Download")
+Set glPivotSht = Workbooks(rRconFileName).Worksheets(gN & " Pivot")
+
+glPivotSht.Activate
+For Each pvt In glPivotSht.PivotTables
+    ptAdd = pvt.TableRange1.Address
+    Range(ptAdd).Clear
+Next
+        
+pLR = glSapDataSht.Range("A" & Rows.Count).End(xlUp).Row
+xLC = glSapDataSht.Cells(1, Columns.Count).End(xlToLeft).Column
+
+ActiveWorkbook.PivotCaches.Create(SourceType:=xlDatabase, SourceData:="'" & glSapDataSht.Name & "'" & "!R1C1:R" & pLR & "C" & xLC, Version:=6).CreatePivotTable TableDestination:="'" & glPivotSht.Name & "'" & "!R3C1", TableName:="Aging", DefaultVersion:=6
+        
+Set mPvt = glPivotSht.Cells(3, 1).PivotTable
+
+mPvt.PivotFields("Assignment").Orientation = xlRowField
+mPvt.PivotFields("Assignment").Position = 1
+
+mPvt.PivotFields("Text").Orientation = xlRowField
+mPvt.PivotFields("Text").Position = 2
+
+mPvt.PivotFields("Ageing").Orientation = xlColumnField
+mPvt.PivotFields("Ageing").Position = 1
+
+mPvt.AddDataField mPvt.PivotFields("Amount in local cur."), "Sum of Amount in local cur.", xlSum
+
+With mPvt
+    .InGridDropZones = True
+    .RowAxisLayout xlTabularRow
+End With
+
+pLC = glPivotSht.Cells(4, Columns.Count).End(xlToLeft).Column
+mPvt.PivotSelect "Current", xlDataAndLabel, True
+mPvt.PivotFields("Ageing").PivotItems("Current").Position = 1
+xP = 1
+For p = 1 To 27
+    iDay = p & "0 days"
+    For l = 1 To 15
+        If LCase(glPivotSht.Cells(4, l).Value) = iDay Then
+            xP = xP + 1
+            mPvt.PivotSelect iDay, xlDataAndLabel, True
+            mPvt.PivotFields("Ageing").PivotItems(iDay).Position = xP
+        End If
+    Next
+Next
+
+mPvt.PivotFields("FM Responsible").AutoSort Order:=xlDescending, field:="Sum of Amount in local cur."
+glPivotSht.Activate
+glPivotSht.Columns("C:P").Select
+Selection.Style = "Comma"
+glPivotSht.Cells.Font.Size = 9
+glPivotSht.Columns("A:Z").AutoFit
+Workbooks(rRconFileName).Save
+Set mPvt = Nothing
+Set glPivotSht = Nothing
+
+End Sub
+
+
