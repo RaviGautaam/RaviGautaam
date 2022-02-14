@@ -1,0 +1,138 @@
+Sub PdfInvoice()
+Dim msheet As Worksheet
+Dim outlookapp As Object
+Dim outlookmailitem As Object
+Dim myattachments As Object
+Dim SapGuiAuto As Object
+Dim aApplication As Object
+Dim Connection As Object
+Dim session As Object
+
+Set SapGuiAuto = GetObject("SAPGUI")
+Set aApplication = SapGuiAuto.GetScriptingEngine
+Set Connection = aApplication.Children(0)
+Set session = Connection.Children(0)
+   
+
+Set msheet = ThisWorkbook.Worksheets("Extract PDF")
+lRow = msheet.Range("A" & Rows.Count).End(xlUp).Row
+msheet.Columns("F:F").ClearContents
+msheet.Range("F1").Value = "Customer Email"
+msheet.Range("F2:F" & lRow).Value = "=IFERROR(VLOOKUP(A2,Customer_Emailid!$A:$C,3,0),"""")"
+
+
+session.findById("wnd[0]").resizeWorkingPane 207, 31, False
+session.findById("wnd[0]/tbar[0]/okcd").Text = "FBL5N"
+session.findById("wnd[0]/tbar[0]/btn[0]").press
+
+
+For i = 2 To lRow
+
+    session.findById("wnd[0]/usr/ctxtDD_KUNNR-LOW").Text = msheet.Range("A" & i).Value '"453661"
+    
+    session.findById("wnd[0]/usr/ctxtDD_BUKRS-LOW").Text = msheet.Range("E" & i).Value  '"1000"
+    session.findById("wnd[0]/usr/ctxtPA_STIDA").Text = msheet.Range("B" & i).Value  ' "12.01.2022"
+    
+    session.findById("wnd[0]/usr/ctxtPA_VARI").SetFocus
+    session.findById("wnd[0]/usr/ctxtPA_VARI").caretPosition = 0
+    session.findById("wnd[0]/usr/ctxtPA_VARI").Text = "/CORNE FBL5N"
+    session.findById("wnd[0]/usr/ctxtPA_VARI").SetFocus
+    session.findById("wnd[0]/usr/ctxtPA_VARI").caretPosition = 12
+    session.findById("wnd[0]/tbar[1]/btn[8]").press
+    session.findById("wnd[0]/usr/lbl[34,10]").SetFocus
+    session.findById("wnd[0]/usr/lbl[34,10]").caretPosition = 4
+    session.findById("wnd[0]/mbar/menu[4]/menu[11]/menu[0]").Select
+    session.findById("wnd[1]/tbar[0]/btn[71]").press
+    session.findById("wnd[2]/usr/txtRSYSF-STRING").Text = "ZABI5"
+    session.findById("wnd[2]/usr/txtRSYSF-STRING").caretPosition = 5
+    session.findById("wnd[2]/tbar[0]/btn[0]").press
+    session.findById("wnd[3]/usr/lbl[1,2]").SetFocus
+    session.findById("wnd[3]/usr/lbl[1,2]").caretPosition = 2
+    session.findById("wnd[3]").sendVKey 2
+    session.findById("wnd[1]/tbar[0]/btn[0]").press
+    session.findById("wnd[1]/usr/ctxtRF022-DATU1").Text = msheet.Range("C" & i).Value '"31.12.2021"
+    session.findById("wnd[1]/usr/ctxtRF022-DATU2").Text = msheet.Range("D" & i).Value '"31.12.2021"
+    session.findById("wnd[1]/usr/ctxtRF022-DATU2").SetFocus
+    session.findById("wnd[1]/usr/ctxtRF022-DATU2").caretPosition = 10
+    session.findById("wnd[1]/tbar[0]/btn[0]").press
+    session.findById("wnd[0]/mbar/menu[4]/menu[11]/menu[1]").Select
+    session.findById("wnd[1]/usr/chkPREVIEW").Selected = True
+    session.findById("wnd[1]/usr/chkPREVIEW").SetFocus
+    session.findById("wnd[1]/tbar[0]/btn[0]").press
+    
+    
+    
+    dr = Dir(ThisWorkbook.Worksheets("UtilityTab").Range("C4").Value & "\" & msheet.Range("A" & i).Value & ".pdf")
+    
+    If dr <> "" Then
+        fn = msheet.Range("A" & i).Value & "_inv"
+    Else
+        fn = msheet.Range("A" & i).Value
+    End If
+    
+    Application.Wait (Now() + TimeSerial(0, 0, 3))
+    session.findById("wnd[0]/mbar/menu[0]/menu[0]").Select
+    'session.findById("wnd[0]/usr/lbl[30,2]").SetFocus
+    'session.findById("wnd[0]/usr/lbl[30,2]").caretPosition = 65
+    Application.Wait (Now() + TimeSerial(0, 0, 3))
+    AppActivate "Print"
+    Application.SendKeys "{TAB}"
+    Application.SendKeys "{TAB}"
+    Application.SendKeys "{TAB}"
+    Application.SendKeys "{TAB}"
+    Application.SendKeys "{TAB}"
+    Application.SendKeys "{TAB}"
+    Application.SendKeys "{DOWN}"
+    Application.SendKeys "{DOWN}"
+    'Application.SendKeys "{UP}"
+    'Application.SendKeys "{UP}"
+    Application.SendKeys "{ENTER}"
+    Application.Wait (Now() + TimeSerial(0, 0, 3))
+    AppActivate "Save Print Output As"
+    Application.SendKeys ThisWorkbook.Worksheets("UtilityTab").Range("C4").Value & "\" & fn & ".pdf"
+    Application.Wait (Now() + TimeSerial(0, 0, 2))
+    
+    'Application.SendKeys "{TAB}"
+    Application.SendKeys "{TAB}"
+    Application.SendKeys "{TAB}"
+    Application.SendKeys "{ENTER}"
+    
+    
+    Application.Wait (Now() + TimeSerial(0, 0, 3))
+    
+    
+    session.findById("wnd[0]/tbar[0]/btn[3]").press
+    session.findById("wnd[0]/tbar[0]/btn[3]").press
+    session.findById("wnd[0]/tbar[0]/btn[3]").press
+    
+'Sending Email
+    Set outlookapp = CreateObject("outlook.application")
+    Set outlookmailitem = outlookapp.createitem(0)
+    Set myattachments = outlookmailitem.Attachments
+    
+    
+    sSub = ""
+    For k = 1 To 21
+        If Sheet2.Range("Z" & k).Value <> "" Then
+            sSub = sSub & Sheet2.Range("Z" & k).Value
+        End If
+    Next
+    cn = WorksheetFunction.VLookup(msheet.Range("A" & i).Value, ThisWorkbook.Worksheets("Customer_Emailid").Range("A:C"), 2, 0)
+    With outlookmailitem
+        .To = msheet.Range("F" & i).Value
+        .HTMLBody = sSub & "<img src='" & ThisWorkbook.Worksheets("UtilityTab").Range("C4").Value & "\Sign.jpg'>"
+        .CC = ThisWorkbook.Worksheets("UtilityTab").Range("C5").Value
+        .Subject = msheet.Range("A" & i).Value & " " & cn & " STATEMENT " & " " & Format(Date, "MMM YYYY")
+         pathFileName = ThisWorkbook.Worksheets("UtilityTab").Range("C4").Value & "\" & fn & ".pdf"
+        myattachments.Add pathFileName
+        .Send
+        '.Display
+       ' .Save
+        
+    End With
+Next
+session.findById("wnd[0]/tbar[0]/btn[3]").press
+
+End Sub
+
+
