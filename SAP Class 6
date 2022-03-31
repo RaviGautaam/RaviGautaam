@@ -1,0 +1,205 @@
+
+Option Explicit
+
+Private PrSize As Double
+Private PrSuppressed As String * 1
+Private PrAlignment As Long
+Private PrLineStyleBegin As Long
+Private PrLineWeightBegin As Long
+Private PrLineStyleInside As Long
+Private PrLineWeightInside As Long
+Private PrLineStyleEnd As Long
+Private PrLineWeightEnd As Long
+
+
+Sub setFormat(SAPTableRow As Object)
+
+  PrSize = SAPTableRow("SIZE")
+  PrSuppressed = SAPTableRow("SUPPRESSED")
+  PrAlignment = SAPTableRow("ALIGNMENT")
+  PrLineStyleBegin = toXlLineStyle(SAPTableRow("LINE_STYLE_BEGIN"))
+  PrLineWeightBegin = toXlLineWeight(SAPTableRow("LINE_WEIGHT_BEGIN"), PrLineStyleBegin)
+  PrLineStyleInside = toXlLineStyle(SAPTableRow("LINE_STYLE_INSIDE"))
+  PrLineWeightInside = toXlLineWeight(SAPTableRow("LINE_WEIGHT_INSIDE"), PrLineStyleInside)
+  PrLineStyleEnd = toXlLineStyle(SAPTableRow("LINE_STYLE_END"))
+  PrLineWeightEnd = toXlLineWeight(SAPTableRow("LINE_WEIGHT_END"), PrLineStyleEnd)
+
+End Sub
+
+Sub assignToRangeRows(aRange As Range)
+
+  If PrSize > 0# Then
+    aRange.RowHeight = PrSize
+  End If
+
+  'Supress
+  Select Case PrSuppressed
+    Case "0"
+      aRange.EntireRow.Hidden = False
+    Case "1"
+      aRange.EntireRow.Hidden = True
+    Case Else
+  End Select
+
+  'Alignment
+  Select Case PrAlignment
+    Case 1
+      aRange.VerticalAlignment = xlVAlignTop
+    Case 2
+      aRange.VerticalAlignment = xlVAlignCenter
+    Case 3
+      aRange.VerticalAlignment = xlVAlignBottom
+    Case 4
+      aRange.VerticalAlignment = xlVAlignJustify
+    Case Else
+  End Select
+
+  With aRange.Borders(xlEdgeTop)
+    If PrLineStyleBegin <> 0 Then
+      .LineStyle = PrLineStyleBegin
+    End If
+    If PrLineWeightBegin <> 0 Then
+      .Weight = PrLineWeightBegin
+    End If
+  End With
+  With aRange.Borders(xlInsideHorizontal)
+    If PrLineStyleInside <> 0 Then
+      On Error Resume Next
+      .LineStyle = PrLineStyleInside
+      On Error GoTo 0
+    End If
+    If PrLineWeightInside <> 0 Then
+      On Error Resume Next
+      .Weight = PrLineWeightInside
+      On Error GoTo 0
+    End If
+  End With
+  With aRange.Borders(xlEdgeBottom)
+    If PrLineStyleEnd <> 0 Then
+      .LineStyle = PrLineStyleEnd
+    End If
+    If PrLineWeightEnd <> 0 Then
+      .Weight = PrLineWeightEnd
+    End If
+  End With
+
+End Sub
+
+Sub assignToRangeColumns(aRange As Range)
+
+  If PrSize > 0# Then
+    aRange.ColumnWidth = PrSize
+  End If
+
+  Select Case PrSuppressed
+    Case "0"
+      aRange.EntireColumn.Hidden = False
+    Case "1"
+      aRange.EntireColumn.Hidden = True
+    Case Else
+  End Select
+
+  'Alignment
+  Select Case PrAlignment
+    Case -1
+      aRange.HorizontalAlignment = xlHAlignGeneral
+    Case 1
+      aRange.HorizontalAlignment = xlHAlignLeft
+    Case 2
+      aRange.HorizontalAlignment = xlHAlignCenter
+    Case 3
+      aRange.HorizontalAlignment = xlHAlignRight
+    Case 4
+      aRange.HorizontalAlignment = xlHAlignJustify
+    Case 5
+      aRange.HorizontalAlignment = xlHAlignCenterAcrossSelection
+    Case 6
+      aRange.HorizontalAlignment = xlHAlignFill
+    Case Else
+  End Select
+
+
+  With aRange.Borders(xlEdgeLeft)
+    If PrLineStyleBegin <> 0 Then
+      .LineStyle = PrLineStyleBegin
+    End If
+    If PrLineWeightBegin <> 0 Then
+      .Weight = PrLineWeightBegin
+    End If
+  End With
+  With aRange.Borders(xlInsideVertical)
+    If PrLineStyleInside <> 0 Then
+      On Error Resume Next
+      .LineStyle = PrLineStyleInside
+      On Error GoTo 0
+    End If
+    If PrLineWeightInside <> 0 Then
+      On Error Resume Next
+      .Weight = PrLineWeightInside
+      On Error GoTo 0
+    End If
+  End With
+  With aRange.Borders(xlEdgeRight)
+    If PrLineStyleEnd <> 0 Then
+      .LineStyle = PrLineStyleEnd
+    End If
+    If PrLineWeightEnd <> 0 Then
+      .Weight = PrLineWeightEnd
+    End If
+  End With
+
+End Sub
+
+'*******************************************************************************
+'*
+'*   Converts SAP line style to Excel line style
+'*
+'*******************************************************************************
+Private Function toXlLineStyle(SAPLineStyle As Long) As Long
+
+  Select Case SAPLineStyle
+    Case -1
+      toXlLineStyle = xlLineStyleNone
+    Case 1
+      toXlLineStyle = xlContinuous
+    Case 2
+      toXlLineStyle = xlDash
+    Case 3
+      toXlLineStyle = xlDashDot
+    Case 4
+      toXlLineStyle = xlDashDotDot
+    Case 5
+      toXlLineStyle = xlDot
+    Case 6
+      toXlLineStyle = xlDouble
+    Case 7
+      toXlLineStyle = xlSlantDashDot
+    Case Else
+      toXlLineStyle = 0
+  End Select
+
+End Function
+
+'*******************************************************************************
+'*
+'*   Converts SAP line weight to Excel line weight
+'*
+'*******************************************************************************
+Private Function toXlLineWeight(SAPLineWeight As Long, xlLineStyle As Long) As Long
+
+  If SAPLineWeight <= 0 Then
+    toXlLineWeight = SAPLineWeight
+  Else
+    If xlLineStyle = xlDouble Then
+      toXlLineWeight = 0
+    Else
+      toXlLineWeight = SAPLineWeight
+    End If
+  End If
+
+End Function
+
+
+
+
+
