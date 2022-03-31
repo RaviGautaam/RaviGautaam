@@ -1,0 +1,632 @@
+Option Explicit
+
+Public SAPSheets As New SAPWorksheets
+Public SAPContainer As Object
+
+Public SAPRCFormats As New Collection
+Public SAPCellFormats As New Collection
+Public SAPNumberFormats As New Collection
+Public SAPFormats As New Collection
+
+Private SaveScreenUpdating As Boolean
+
+Public Const SAPColorOffset As Long = 0
+
+'*******************************************************************************
+'   Initialize Workbook (SAPSheets)
+'*******************************************************************************
+Public Sub Workbook_init(CountSheets As Long)
+
+  Dim R3Sheets As Object
+  Dim R3Sheet As Object
+  
+  Dim ws As Worksheet
+  
+  Dim SheetIndex As Long
+  Dim LastSheetIndex As Long
+  Dim NoSheets As Long
+  Dim I As Long
+  
+  SaveScreenUpdating = Application.ScreenUpdating
+  Application.ScreenUpdating = False
+  
+  Set SAPContainer = ThisWorkbook.Container
+  Set R3Sheets = SAPContainer.tables("SHEETS").Table
+  
+  Call Workbook_setColors
+  
+  LastSheetIndex = 0
+  For Each R3Sheet In R3Sheets.Rows
+    SheetIndex = R3Sheet("INDEX")
+    Set ws = SAPSheets.item(SheetIndex)
+    
+    ws.Visible = xlSheetVisible
+    ws.Unprotect
+    ws.Cells.Delete
+    ws.Cells.Clear
+    ws.Cells.ClearOutline
+    
+    If R3Sheet("TOTALS_ABOVE") = "1" Then
+      ws.Outline.SummaryRow = xlSummaryAbove
+    Else
+      ws.Outline.SummaryRow = xlSummaryBelow
+    End If
+    If R3Sheet("TOTALS_LEFT") = "1" Then
+      ws.Outline.SummaryColumn = xlSummaryOnLeft
+    Else
+      ws.Outline.SummaryColumn = xlSummaryOnRight
+    End If
+
+    ws.Cells.Interior.ColorIndex = SAPColorOffset + 1
+    
+    SAPSheets.title(SheetIndex) = R3Sheet("TITLE")
+    For I = LastSheetIndex + 1 To SheetIndex - 1
+      Set ws = SAPSheets.item(I)
+      ws.Visible = xlSheetHidden
+    Next I
+    LastSheetIndex = SheetIndex
+  Next R3Sheet
+  
+  NoSheets = SAPSheets.count
+  For I = LastSheetIndex + 1 To NoSheets
+    Set ws = SAPSheets.item(I)
+    ws.Visible = xlSheetHidden
+  Next I
+  
+End Sub
+'*******************************************************************************
+'   Receive row/column-oriented formats
+'*******************************************************************************
+Public Sub Workbook_receiveRCFormats()
+ 
+  Dim SAPTable As Object
+  Dim SAPTableRow As Object
+  
+  Dim SAPRCFormat As SAPRCFormat
+  
+  Dim Index As Long
+
+  Dim NoItems As Long
+  Dim I As Long
+
+ 
+  Set SAPContainer = ThisWorkbook.Container
+  Set SAPTable = SAPContainer.tables("RC_FORMATS").Table
+  For Each SAPTableRow In SAPTable.Rows
+    Index = SAPTableRow("INDEX")
+    NoItems = SAPRCFormats.count
+    If Index <= NoItems Then
+      Set SAPRCFormat = SAPRCFormats.item(Index)
+    Else
+      For I = NoItems + 1 To Index
+        Set SAPRCFormat = New SAPRCFormat
+        SAPRCFormats.Add SAPRCFormat
+      Next I
+    End If
+    SAPRCFormat.setFormat SAPTableRow
+  Next SAPTableRow
+
+End Sub
+'*******************************************************************************
+'   Receive scalar formats
+'*******************************************************************************
+Public Sub Workbook_receiveCellFormats()
+ 
+  Dim SAPTable As Object
+  Dim SAPTableRow As Object
+  
+  Dim SAPCellFormat As SAPCellFormat
+  
+  Dim Index As Long
+
+  Dim NoItems As Long
+  Dim I As Long
+
+ 
+  Set SAPContainer = ThisWorkbook.Container
+  Set SAPTable = SAPContainer.tables("CELL_FORMATS").Table
+  For Each SAPTableRow In SAPTable.Rows
+    Index = SAPTableRow("INDEX")
+    NoItems = SAPCellFormats.count
+    If Index <= NoItems Then
+      Set SAPCellFormat = SAPCellFormats.item(Index)
+    Else
+      For I = NoItems + 1 To Index
+        Set SAPCellFormat = New SAPCellFormat
+        SAPCellFormats.Add SAPCellFormat
+      Next I
+    End If
+    SAPCellFormat.setFormat SAPTableRow
+  Next SAPTableRow
+
+End Sub
+'*******************************************************************************
+'   Receive number formats
+'*******************************************************************************
+Public Sub Workbook_receiveNumberFormats()
+ 
+  Dim SAPTable As Object
+  Dim SAPTableRow As Object
+
+  Dim SAPNumberFormat As SAPNumberFormat
+
+  Dim Index As Long
+  Dim NoItems As Long
+  Dim I As Long
+
+ 
+  Set SAPContainer = ThisWorkbook.Container
+
+  Set SAPTable = SAPContainer.tables("NUMBER_FORMATS").Table
+  For Each SAPTableRow In SAPTable.Rows
+  
+    Index = SAPTableRow("INDEX")
+    NoItems = SAPNumberFormats.count
+    If Index <= NoItems Then
+      Set SAPNumberFormat = SAPNumberFormats.item(Index)
+    Else
+      For I = NoItems + 1 To Index
+        Set SAPNumberFormat = New SAPNumberFormat
+        SAPNumberFormats.Add SAPNumberFormat
+      Next I
+    End If
+    SAPNumberFormat.setFormat SAPTableRow
+    
+  Next SAPTableRow
+
+End Sub
+'*******************************************************************************
+'   Receive formats
+'*******************************************************************************
+Public Sub Workbook_receiveFormats()
+ 
+  Dim SAPTable As Object
+  Dim SAPTableRow As Object
+  
+  Dim SAPFormat As SAPFormat
+  
+  Dim Index As Long
+
+  Dim NoItems As Long
+  Dim I As Long
+
+ 
+  Set SAPContainer = ThisWorkbook.Container
+  Set SAPTable = SAPContainer.tables("FORMATS").Table
+  For Each SAPTableRow In SAPTable.Rows
+    Index = SAPTableRow("INDEX")
+    NoItems = SAPFormats.count
+    If Index <= NoItems Then
+      Set SAPFormat = SAPFormats.item(Index)
+    Else
+      For I = NoItems + 1 To Index
+        Set SAPFormat = New SAPFormat
+        SAPFormats.Add SAPFormat
+      Next I
+    End If
+    SAPFormat.setFormat SAPTableRow
+  Next SAPTableRow
+
+End Sub
+'*******************************************************************************
+'   Set color palette
+'*******************************************************************************
+Public Sub Workbook_setColors()
+
+  Dim SAPTable As Object
+  Dim SAPTableRow As Object
+
+  Dim ColorIndex As Integer
+  Dim ColorRed As Integer
+  Dim ColorGreen As Integer
+  Dim ColorBlue As Integer
+
+  Set SAPContainer = ThisWorkbook.Container
+
+' Process text cells
+
+  Set SAPTable = SAPContainer.tables("COLORS").Table
+  For Each SAPTableRow In SAPTable.Rows
+    ColorIndex = SAPTableRow("COLOR_INDEX") + SAPColorOffset
+    ColorRed = SAPTableRow("RED")
+    ColorGreen = SAPTableRow("GREEN")
+    ColorBlue = SAPTableRow("BLUE")
+    ThisWorkbook.Colors(ColorIndex) = RGB(ColorRed, ColorGreen, ColorBlue)
+  Next SAPTableRow
+
+End Sub
+'*******************************************************************************
+'   Send selection
+'*******************************************************************************Sub SAPSheet_getData(SheetId As Variant)
+Public Sub Workbook_sendSelection()
+
+  Dim SAPSheetsTable As Object
+  Dim SAPSheetsTableRow As Object
+  Dim SAPRangesTable As Object
+  Dim SAPRangesTableRow As Object
+
+  Dim SelectedRange As Range
+  
+  Dim SAPSheet As Worksheet
+  
+  Dim NoSheets As Long
+  Dim SheetIndex As Long
+  
+  
+  Set SAPSheetsTable = SAPContainer.tables("SHEETS").Table
+  Set SAPRangesTable = SAPContainer.tables("RANGES").Table
+  
+  SAPSheetsTable.Rows.RemoveAll
+  SAPRangesTable.Rows.RemoveAll
+
+  NoSheets = SAPSheets.count
+  For SheetIndex = 1 To NoSheets
+    Set SAPSheet = SAPSheets.item(SheetIndex)
+    Set SAPSheetsTableRow = SAPSheetsTable.Rows.Add
+    SAPSheetsTableRow.cell(1) = SheetIndex
+    SAPSheetsTableRow.cell(2) = SAPSheet.Name
+    If SAPSheet.Name = ActiveSheet.Name Then
+      SAPSheetsTableRow.cell(3) = "1"
+    Else
+      SAPSheetsTableRow.cell(3) = "0"
+    End If
+  Next SheetIndex
+  
+  If SAPSheetsTable.Rows.count = 0 Then
+    Exit Sub
+  End If
+  
+  For Each SelectedRange In Selection.Areas
+    Set SAPRangesTableRow = SAPRangesTable.Rows.Add
+    SAPRangesTableRow.cell(1) = SelectedRange.Row
+    SAPRangesTableRow.cell(2) = SelectedRange.Column
+    SAPRangesTableRow.cell(3) = SelectedRange.Rows.count
+    SAPRangesTableRow.cell(4) = SelectedRange.Columns.count
+  Next SelectedRange
+
+End Sub
+'*******************************************************************************
+'   Receive format assignments
+'*******************************************************************************Sub SAPSheet_getData(SheetId As Variant)
+Public Sub Worksheet_receiveFormatAssignments(SheetIndex As Long)
+
+
+  Dim SAPAreaTable As Object
+  Dim SAPAreaTableRow As Object
+  Dim SAPRangesTable As Object
+  Dim SAPRangesTableRow As Object
+  
+  Dim SAPFormat As SAPFormat
+    
+  Dim ws As Worksheet
+  Dim Area As Range
+  Dim NewRange As Range
+  
+  Dim TempSheetIndex As Long
+  Dim LastSheetIndex As Long
+  
+  Dim FormatIndex As Long
+  Dim I As Long
+  Dim P_From As Long
+  Dim P_To As Long
+  Dim RowIndexFrom As Long
+  Dim RowIndexTo As Long
+  Dim ColumnIndexFrom As Long
+  Dim ColumnIndexTo As Long
+  
+
+' Process format assignments
+
+  Set SAPAreaTable = SAPContainer.tables("FORMAT_ASSIGNMENTS").Table
+  Set SAPRangesTable = SAPContainer.tables("RANGES").Table
+
+  LastSheetIndex = 0
+  For Each SAPAreaTableRow In SAPAreaTable.Rows
+  
+    TempSheetIndex = SAPAreaTableRow("SHEET_INDEX")
+    If TempSheetIndex = 0 Then
+      TempSheetIndex = SheetIndex
+    End If
+    If TempSheetIndex <> LastSheetIndex Then
+      Set ws = SAPSheets.item(TempSheetIndex)
+      LastSheetIndex = TempSheetIndex
+    End If
+    
+ 
+    Set Area = Nothing
+    
+    FormatIndex = SAPAreaTableRow("FORMAT_INDEX")
+    P_From = SAPAreaTableRow("P_FROM")
+    P_To = SAPAreaTableRow("P_TO")
+    If (FormatIndex > 0) And _
+       (P_From <= P_To) Then
+        
+      For I = P_From To P_To
+      
+        Set SAPRangesTableRow = SAPRangesTable.Rows(I)
+        RowIndexFrom = SAPRangesTableRow("ROW_OFFSET")
+        ColumnIndexFrom = SAPRangesTableRow("COLUMN_OFFSET")
+        RowIndexTo = RowIndexFrom + SAPRangesTableRow("HEIGHT") - 1
+        ColumnIndexTo = ColumnIndexFrom + SAPRangesTableRow("WIDTH") - 1
+        If RowIndexFrom = 0 And ColumnIndexFrom = 0 Then
+          Set NewRange = ws.Cells
+        ElseIf RowIndexFrom = 0 Then
+          Set NewRange = ws.Range(ws.Columns(ColumnIndexFrom), _
+                                  ws.Columns(ColumnIndexTo))
+        ElseIf ColumnIndexFrom = 0 Then
+          Set NewRange = ws.Range(ws.Rows(RowIndexFrom), _
+                                  ws.Rows(RowIndexTo))
+        Else
+          If (RowIndexFrom <= RowIndexTo) And _
+             (ColumnIndexFrom <= ColumnIndexTo) Then
+            Set NewRange = ws.Range(ws.Cells(RowIndexFrom, ColumnIndexFrom), _
+                                    ws.Cells(RowIndexTo, ColumnIndexTo))
+          Else
+            Set NewRange = Nothing
+          End If
+        End If
+          
+'       add new range to area
+        If Not NewRange Is Nothing Then
+          If Area Is Nothing Then
+            Set Area = NewRange
+          Else
+            Set Area = Union(Area, NewRange)
+          End If
+        End If
+          
+      Next I
+      
+      If Not Area Is Nothing Then
+        Set SAPFormat = SAPFormats.item(FormatIndex)
+        SAPFormat.assignToRange Area
+      End If
+      
+    End If
+
+  Next SAPAreaTableRow
+
+End Sub
+'*******************************************************************************
+'   Receive sheet texts
+'*******************************************************************************Sub SAPSheet_getData(SheetId As Variant)
+Public Sub Worksheet_receiveTexts(SheetIndex As Long)
+
+  Dim R3Ranges  As Object
+  Dim R3TextCells As Object
+  Dim R3TextGrid As Object
+  
+  Dim R3Range As Object
+
+  
+  Dim ws As Worksheet
+  Dim Range As Range
+  
+  Dim TempSheetIndex As Long
+  Dim LastSheetIndex As Long
+  
+  Dim nro As Long
+  Dim nco As Long
+  Dim nrh As Long
+  Dim ncw As Long
+  
+  Dim P_From As Long
+  Dim P_To As Long
+  
+  
+' Process text cells
+
+  Set R3Ranges = SAPContainer.tables("DATA_RANGES").Table
+  Set R3TextCells = SAPContainer.tables("TEXT_CELLS").Table
+  Set R3TextGrid = SAPContainer.tables("TEXT_GRID").Table
+
+  LastSheetIndex = 0
+  For Each R3Range In R3Ranges.Rows
+    
+    TempSheetIndex = R3Range("SHEET_INDEX")
+    If TempSheetIndex = 0 Then
+      TempSheetIndex = SheetIndex
+    End If
+    If TempSheetIndex <> LastSheetIndex Then
+      Set ws = SAPSheets.item(TempSheetIndex)
+      LastSheetIndex = TempSheetIndex
+    End If
+
+    nro = R3Range("ROW_OFFSET")
+    nco = R3Range("COLUMN_OFFSET")
+    nrh = R3Range("HEIGHT")
+    ncw = R3Range("WIDTH")
+  
+    Set Range = ws.Range(ws.Cells(nro, nco), ws.Cells(nro + nrh - 1, nco + ncw - 1))
+    
+    P_From = R3Range("P_FROM")
+    P_To = R3Range("P_TO")
+    If P_From <= P_To Then
+      Set R3Range = R3TextCells.Ranges.Add
+      R3Range.lowerbound = P_From
+      R3Range.upperbound = P_To
+      R3Range.leftbound = 1
+      R3Range.rightbound = 3
+      R3TextGrid.FreeTable
+      R3TextGrid.Data = R3Range.Data
+      Range.Value = R3TextGrid.fetchgrid(1, nrh, 2, ncw, 3).Data
+    Else
+      Range.Value = ""
+    End If
+     
+  Next R3Range
+
+End Sub
+'*******************************************************************************
+'   Receive sheet numbers
+'*******************************************************************************Sub SAPSheet_getData(SheetId As Variant)
+Public Sub Worksheet_receiveNumbers(SheetIndex As Long)
+
+  Dim R3Ranges  As Object
+  Dim R3NumRanges As Object
+  Dim R3NumCells As Object
+  Dim R3NumGrid As Object
+
+  Dim R3Range As Object
+
+  Dim ws As Worksheet
+  Dim Range As Range
+  
+  Dim TempSheetIndex As Long
+  Dim LastSheetIndex As Long
+
+  Dim nro As Long
+  Dim nco As Long
+  Dim nrh As Long
+  Dim ncw As Long
+  
+  Dim P_From As Long
+  Dim P_To As Long
+  
+
+  Set ws = SAPSheets.item(SheetIndex)
+  
+' Process data cells
+
+  Set R3Ranges = SAPContainer.tables("DATA_RANGES").Table
+  Set R3NumCells = SAPContainer.tables("NUM_CELLS").Table
+  Set R3NumGrid = SAPContainer.tables("NUM_GRID").Table
+ 
+  LastSheetIndex = 0
+  For Each R3Range In R3Ranges.Rows
+    
+    TempSheetIndex = R3Range("SHEET_INDEX")
+    If TempSheetIndex = 0 Then
+      TempSheetIndex = SheetIndex
+    End If
+    If TempSheetIndex <> LastSheetIndex Then
+      Set ws = SAPSheets.item(TempSheetIndex)
+      LastSheetIndex = TempSheetIndex
+    End If
+  
+    nro = R3Range("ROW_OFFSET")
+    nco = R3Range("COLUMN_OFFSET")
+    nrh = R3Range("HEIGHT")
+    ncw = R3Range("WIDTH")
+  
+    
+    Set Range = ws.Range(ws.Cells(nro, nco), ws.Cells(nro + nrh - 1, nco + ncw - 1))
+    
+    P_From = R3Range("P_FROM")
+    P_To = R3Range("P_TO")
+    If P_From <= P_To Then
+      Set R3Range = R3NumCells.Ranges.Add
+      R3Range.lowerbound = P_From
+      R3Range.upperbound = P_To
+      R3Range.leftbound = 1
+      R3Range.rightbound = 3
+      R3NumGrid.FreeTable
+      R3NumGrid.Data = R3Range.Data
+      Range.Value = R3NumGrid.fetchgrid(1, nrh, 2, ncw, 3).Data
+    Else
+      Range.Value = 0
+    End If
+  
+  Next R3Range
+
+End Sub
+'*******************************************************************************
+'   Receive outlines
+'*******************************************************************************Sub SAPSheet_getData(SheetId As Variant)
+Public Sub Worksheet_receiveOutlines(SheetIndex As Long)
+                                     
+  Dim SAPTable  As Object
+  Dim SAPTableRow As Object
+
+  Dim ws As Worksheet
+  
+  Dim TempSheetIndex As Long
+  Dim LastSheetIndex As Long
+  
+  Dim FromIndex As Long
+  Dim ToIndex As Long
+  
+
+' Process data cells
+
+  Set SAPTable = SAPContainer.tables("OUTLINES").Table
+
+  LastSheetIndex = 0
+  For Each SAPTableRow In SAPTable.Rows
+    
+    TempSheetIndex = SAPTableRow("SHEET_INDEX")
+    If TempSheetIndex = 0 Then
+      TempSheetIndex = SheetIndex
+    End If
+    If TempSheetIndex <> LastSheetIndex Then
+      Set ws = SAPSheets.item(TempSheetIndex)
+      LastSheetIndex = TempSheetIndex
+    End If
+        
+    FromIndex = SAPTableRow("FROM_INDEX")
+    ToIndex = SAPTableRow("TO_INDEX")
+    If FromIndex > 0 And FromIndex <= ToIndex Then
+      If SAPTableRow("RC_INDICATOR") = "R" Then
+        ws.Range(ws.Rows(FromIndex), ws.Rows(ToIndex)).Rows.Group
+      Else
+        ws.Range(ws.Columns(FromIndex), ws.Columns(ToIndex)).Columns.Group
+      End If
+    End If
+  
+  Next SAPTableRow
+
+End Sub
+'*******************************************************************************
+'
+'*******************************************************************************
+Public Sub Workbook_executeCommand(Command As Variant, SheetIndex As Long, Param As Variant)
+
+  Dim NoSheets As Long
+  Dim I As Long
+  
+  Dim SAPSheet As Worksheet
+  
+  Select Case Command
+    Case "PR+"
+      NoSheets = SAPSheets.count
+      For I = 1 To NoSheets
+        Set SAPSheet = SAPSheets.item(I)
+        SAPSheet.Protect , , , , True
+        SAPSheet.EnableOutlining = True
+      Next I
+    Case "PR-"
+      NoSheets = SAPSheets.count
+      For I = 1 To NoSheets
+        Set SAPSheet = SAPSheets.item(I)
+        SAPSheet.Unprotect
+      Next I
+    Case Else
+    
+  End Select
+    
+End Sub
+'*******************************************************************************
+'
+'*******************************************************************************
+Public Sub Workbook_activateSheet(SheetIndex As Long, Protection As Variant)
+
+  Dim ws As Worksheet
+  Dim NoSheets As Long
+  
+  Application.ScreenUpdating = SaveScreenUpdating
+  
+  NoSheets = SAPSheets.count
+  If SheetIndex >= 1 And SheetIndex <= NoSheets Then
+    Set ws = SAPSheets.item(SheetIndex)
+    ws.Activate
+    ws.Range("A1").Select
+  End If
+ 
+  Call Workbook_executeCommand(Protection, SheetIndex, "")
+  
+  Application.ScreenUpdating = SaveScreenUpdating
+  
+End Sub
+
+
+
