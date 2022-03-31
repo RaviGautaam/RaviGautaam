@@ -1,0 +1,63 @@
+'*************************************************
+'Requires Reference to Microsoft Outlook library
+'*************************************************
+Public Sub saveMails()
+
+Dim OlApp As New Outlook.Application
+Dim OlMail As Outlook.MailItem
+Dim OlItems As Outlook.Items
+Dim OlFolder As Outlook.MAPIFolder
+Dim i As Integer
+
+Dim strFolder As String
+Dim mySaveName As String
+Dim myExt As String
+
+strFolder = "D:\My Project\myTesting"
+
+On Error Resume Next
+Set OlApp = GetObject(, "Outlook.Application")
+
+If err.Number = 429 Then
+    Set OlApp = CreateObject("Outlook.Application")
+End If
+
+Set OlFolder = OlApp.Session.GetDefaultFolder(olFolderInbox)
+Set OlItems = OlFolder.Items
+
+'Loop through all emails
+For Each OlMail In OlItems
+    
+    'check for attachments
+    If OlMail.Attachments.Count > 0 Then
+    
+        'loop through all attachments
+        For i = 1 To OlMail.Attachments.Count
+            
+            mySaveName = OlMail.Attachments.Item(i).Filename
+            myExt = Split(mySaveName, ".")(1)
+            
+            'Only save files with named extensions
+            Select Case myExt
+                Case "xls", "xlsm", "xlsx"
+                    mySaveName = strFolder & "\" & mySaveName
+                    OlMail.Attachments.Item(i).SaveAsFile mySaveName
+                
+                Case Else
+                    'do nothing
+            End Select
+            
+        Next
+        
+    End If
+Next
+
+'clean up
+Set OlFolder = Nothing
+Set OlItems = Nothing
+Set OlMail = Nothing
+Set OlApp = Nothing
+
+
+End Sub
+'-----------------------------------------------------------------------------------------------------------------
