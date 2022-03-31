@@ -1,0 +1,153 @@
+
+Option Explicit
+
+Private PrFormatString As String
+
+Sub setFormat(SAPTableRow As Object)
+
+  PrFormatString = SAPNumberFormatToString(CellType:=SAPTableRow("TYPE"), _
+                                           Decimals:=SAPTableRow("DECIMALS"), _
+                                           MinDecimals:=SAPTableRow("MIN_DECIMALS"), _
+                                           Scaling:=SAPTableRow("SCALING"), _
+                                           ZeroRepresentation:=SAPTableRow("ZERO_REPRESENTATION"), _
+                                           SignRepresentation:=SAPTableRow("SIGN_REPRESENTATION"), _
+                                           SignReversal:=SAPTableRow("SIGN_REVERSAL"), _
+                                           UnitWidth:=SAPTableRow("UNIT_WIDTH"), _
+                                           Unit:=SAPTableRow("UNIT"), _
+                                           Symbol:=SAPTableRow("SYMBOL"))
+
+End Sub
+
+Sub assignToRange(aRange As Range)
+
+  On Error Resume Next 'ignore any errors
+  aRange.NumberFormat = PrFormatString
+
+End Sub
+'*******************************************************************************
+'  Convert Report Writer number format to Excel format string
+'*******************************************************************************
+Private Function SAPNumberFormatToString( _
+    CellType As Variant, _
+    Decimals As Variant, _
+    MinDecimals As Variant, _
+    Scaling As Variant, _
+    ZeroRepresentation As Variant, _
+    SignRepresentation As Variant, _
+    SignReversal As Variant, _
+    UnitWidth As Variant, _
+    Unit As Variant, _
+    Symbol As Variant) As String
+
+  Dim PositiveFormat As String
+  Dim NegativeFormat As String
+  Dim TempFormat As String
+  Dim TempUnit As String
+
+  Dim iScal As Long
+  Dim iDec As Long
+  Dim iMinDec As Long
+  Dim iWidth As Long
+
+  Select Case CellType
+
+    Case "T" 'text
+
+      SAPNumberFormatToString = "@"
+
+    Case "S" 'symbol
+
+      SAPNumberFormatToString = """" & Symbol & """;""" & Symbol & """;""" & Symbol & """"
+
+    Case Else
+
+      PositiveFormat = "#,##0"
+
+      'Scaling (only in factors of 1000)
+
+      If IsNumeric(Scaling) Then
+        iScal = Scaling
+        PositiveFormat = PositiveFormat + String(iScal \ 3, ",")
+      End If
+
+      'Decimal places
+
+      If IsNumeric(Decimals) Then
+        iDec = Decimals
+      Else
+        iDec = 0
+      End If
+      If IsNumeric(MinDecimals) Then
+        iMinDec = MinDecimals
+      Else
+        iMinDec = iDec
+      End If
+      If iDec > 0 Then
+        PositiveFormat = PositiveFormat + "."
+        If iMinDec > 0 Then
+          PositiveFormat = PositiveFormat + String(iMinDec, "0")
+        End If
+        If iDec > iMinDec Then
+          PositiveFormat = PositiveFormat + String(iDec - iMinDec, "#")
+        End If
+      End If
+
+      'Sign Representation
+
+      Select Case SignRepresentation
+        Case "1"  'Prefix
+          NegativeFormat = "-" + PositiveFormat
+        Case "2"  'Suffix
+          NegativeFormat = PositiveFormat + "-"
+          PositiveFormat = PositiveFormat + "_-"
+        Case "3"  'Paranthesis
+          NegativeFormat = "(" + PositiveFormat + ")"
+          PositiveFormat = PositiveFormat + "_)"
+        Case "4"  'Debit/Credit
+          NegativeFormat = PositiveFormat + "\ ""CR"""
+          PositiveFormat = PositiveFormat + "\ ""DB"""
+        Case "5"  'No sign
+          NegativeFormat = PositiveFormat
+        Case Else 'Default: Prefix
+          NegativeFormat = "-" + PositiveFormat
+      End Select
+
+      'Sign reversal
+
+      If SignReversal = "1" Then
+        TempFormat = NegativeFormat
+        NegativeFormat = PositiveFormat
+        PositiveFormat = TempFormat
+      End If
+
+      'Units
+
+      If IsNumeric(UnitWidth) Then
+        iWidth = UnitWidth
+        If iWidth > 0 Then
+          TempUnit = "\ """ + Left(Unit + Space(iWidth), iWidth) + """"
+          PositiveFormat = PositiveFormat + TempUnit
+          NegativeFormat = NegativeFormat + TempUnit
+        End If
+      End If
+
+      'Zero representation
+
+      Select Case ZeroRepresentation
+        Case "1"  '"0"
+          SAPNumberFormatToString = PositiveFormat + ";" + NegativeFormat
+        Case "2"  '"-"
+          SAPNumberFormatToString = PositiveFormat + ";" + NegativeFormat + ";""-"""
+        Case "3"  '" "
+          SAPNumberFormatToString = PositiveFormat + ";" + NegativeFormat + ";"" """
+        Case Else
+          SAPNumberFormatToString = PositiveFormat + ";" + NegativeFormat
+      End Select
+
+  End Select
+
+End Function
+
+
+
+
