@@ -1,0 +1,67 @@
+
+Option Explicit
+
+Private PrRowFormat As SAPRCFormat
+Private PrColumnFormat As SAPRCFormat
+Private PrCellFormat As SAPCellFormat
+Private PrNumberFormat As SAPNumberFormat
+
+Sub setFormat(SAPTableRow As Object)
+
+  Dim Index As Long
+  
+  Index = SAPTableRow("ROW_FORMAT_INDEX")
+  If Index > 0 Then
+    On Error Resume Next
+    Set PrRowFormat = SAPRCFormats.item(Index)
+  Else
+    Set PrRowFormat = Nothing
+  End If
+  
+  Index = SAPTableRow("COLUMN_FORMAT_INDEX")
+  If Index > 0 Then
+    On Error Resume Next
+    Set PrColumnFormat = SAPRCFormats.item(Index)
+  Else
+    Set PrColumnFormat = Nothing
+  End If
+  
+  Index = SAPTableRow("CELL_FORMAT_INDEX")
+  If Index > 0 Then
+    On Error Resume Next
+    Set PrCellFormat = SAPCellFormats.item(Index)
+  Else
+    Set PrCellFormat = Nothing
+  End If
+  
+  Index = SAPTableRow("NUMBER_FORMAT_INDEX")
+  If Index > 0 Then
+    On Error Resume Next
+    Set PrNumberFormat = SAPNumberFormats.item(Index)
+  Else
+    Set PrNumberFormat = Nothing
+  End If
+
+End Sub
+
+Sub assignToRange(aRange As Range)
+
+  If Not PrRowFormat Is Nothing Then
+    PrRowFormat.assignToRangeRows aRange
+  End If
+  If Not PrColumnFormat Is Nothing Then
+    PrColumnFormat.assignToRangeColumns aRange
+  End If
+  If Not PrCellFormat Is Nothing Then
+    PrCellFormat.assignToRange aRange
+  End If
+  If Not PrNumberFormat Is Nothing Then
+    PrNumberFormat.assignToRange aRange
+  End If
+  
+End Sub
+
+
+
+
+
