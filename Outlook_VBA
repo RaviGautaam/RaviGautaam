@@ -1,0 +1,102 @@
+Option Explicit
+'MUST set reference to Microsoft Outlook Object Library
+'See Tools/References on main menu bar of VBE
+'Could also use Late Binding, if necessary
+Sub GetSubjectLines()
+    Dim olA As Outlook.Application
+    Dim olMI As Object 'not as Mail Item
+    Dim aPaths() As String 'paths to *.msg files
+    Dim vSubjects() As Variant 'list of subjects
+    Dim vSelItems As Variant 'to get selected items
+    Dim i As Long
+    Dim rDest As Range 'where Subject lines will be written
+Set olA = New Outlook.Application
+Set rDest = ActiveWorkbook.Sheets("e-mails").Range("B1")
+'Select the files to process
+With Application.FileDialog(msoFileDialogFilePicker)
+    .AllowMultiSelect = True
+    .Filters.Add "Messages", "*.msg", 1
+    .FilterIndex = 1
+    If .Show = -1 Then
+        ReDim aPaths(0 To .SelectedItems.Count - 1)
+        For i = 0 To .SelectedItems.Count - 1
+            aPaths(i) = .SelectedItems(i + 1)
+        Next i
+    End If
+End With
+Application.ScreenUpdating = False
+rDest.EntireColumn.Clear
+With rDest(1, 1)
+    .Value = "Subjects"
+    .Font.Bold = True
+End With
+ReDim vSubjects(1 To UBound(aPaths) + 1, 1 To 1)
+For i = 0 To UBound(aPaths)
+    vSubjects(i + 1, 1) = olA.CreateItemFromTemplate(aPaths(i)).Subject
+Next i
+Set rDest = rDest.Offset(rowoffset:=1).Resize(rowsize:=UBound(vSubjects))
+rDest = vSubjects
+rDest.EntireColumn.AutoFit
+Application.ScreenUpdating = True
+Set olA = Nothing
+End Sub
+Sub ImportEmails()
+   Dim olA As Outlook.Application
+   Dim olNS As Outlook.Namespace
+   Dim olF As Outlook.MAPIFolder
+   Dim olM As Outlook.MailItem
+   Dim lrow As Long
+   On Error Resume Next
+    Set olA = New Outlook.Application
+   Set olNS = olA.GetNamespace("MAPI")
+    Set olF = olNS.GetDefaultFolder(olFolderInbox)
+   lrow = 1
+   For Each olM In olF.Items
+       With ActiveSheet
+           .Cells(lrow, 1) = olM.SenderName
+           .Cells(lrow, 2) = olM.Subject
+           .Cells(lrow, 3) = olM.CreationTime
+           '.Cells(lrow, 4) = olM.Body
+           lrow = lrow + 1
+       End With
+   Next
+    Set olM = Nothing
+   Set olF = Nothing
+   Set olNS = Nothing
+   Set olA = Nothing
+End Sub
+
+Sub Extract()
+On Error Resume Next
+Dim myOlapp As Outlook.Application
+Dim mynamespace As Outlook.Namespace
+Dim xlobj As Object
+Dim myfolder As Outlook.MAPIFolder
+Dim i As Integer
+Dim myitem As Outlook.MailItem
+Dim msgtext As String
+Set myOlapp = Outlook.Application
+
+Set mynamespace = myOlapp.GetNamespace("MAPI")
+Set myfolder = myOlapp.ActiveExplorer.CurrentFolder
+Set xlobj = CreateObject("excel.application.14")
+xlobj.Visible = True
+xlobj.Workbooks.Add
+'Set Heading
+xlobj.Range("a" & 1).Value = "Body"
+xlobj.Range("b" & 1).Value = "Recieved time"
+xlobj.Range("c" & 1).Value = "Sender"
+xlobj.Range("d" & 1).Value = "Subject"
+xlobj.Range("e" & 1).Value = "Recieved Time"
+For i = 1 To myfolder.Items.Count
+ Set myitem = myfolder.Items(i)
+ msgtext = myitem.Body
+  
+ xlobj.Range("a" & i + 1).Value = msgtext
+ xlobj.Range("b" & i + 1).Value = myitem.ReceivedTime
+ xlobj.Range("C" & i + 1).Value = myitem.To
+ xlobj.Range("d" & i + 1).Value = myitem.Subject
+ xlobj.Range("e" & i + 1).Value = myitem.Categories
+  
+ Next
+End Sub
