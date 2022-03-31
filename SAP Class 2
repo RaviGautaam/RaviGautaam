@@ -1,0 +1,55 @@
+
+Option Explicit
+
+Private PrColorIndex As Long
+Private PrFontName As String
+Private PrFontSize As Long
+Private PrFontBold As String * 1
+
+Sub setFormat(SAPTableRow As Object)
+
+  PrColorIndex = SAPTableRow("COLOR_INDEX") + SAPColorOffset
+  PrFontName = SAPTableRow("FONT_NAME")
+  PrFontSize = SAPTableRow("FONT_SIZE")
+  PrFontBold = SAPTableRow("FONT_BOLD")
+
+End Sub
+
+Sub assignToRange(aRange As Range)
+
+  On Error Resume Next 'ignore any errors
+  
+  With aRange.Interior
+  
+    If PrColorIndex > 0 Then
+      .ColorIndex = PrColorIndex
+    End If
+    
+  End With
+  
+  With aRange.Font
+  
+    If PrFontName <> "" Then
+      .Name = PrFontName
+    End If
+  
+    If PrFontSize > 0 Then
+      .size = PrFontSize
+    End If
+
+    Select Case PrFontBold
+      Case "0"
+        .Bold = False
+      Case "1"
+        .Bold = True
+      Case Else
+        'no change
+    End Select
+    
+  End With
+
+End Sub
+
+
+
+
