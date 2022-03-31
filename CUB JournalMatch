@@ -1,0 +1,245 @@
+Sub JournalMatch()
+
+Dim journal_FN(100) As String
+Dim jorunal_FN_DIR(100) As String
+Dim journal_Count As Integer
+Dim my_LR As Integer
+Dim Count As Integer
+Dim myF_Ext As String
+Dim line1, line2, line3, line4 As String
+On Error Resume Next
+
+ActiveWorkbook.Sheets("File Manager").Range("G9") = ActiveWorkbook.Name
+misFile = ActiveWorkbook.Sheets("File Manager").Range("G9")
+Workbooks(misFile).Activate
+my_LR = ActiveWorkbook.Sheets(1).Range("B" & 500).End(xlUp).Row
+
+For journal_Count = 1 To (my_LR - 13)
+journal_FN(journal_Count) = ActiveWorkbook.Sheets(1).Range("C" & 13 + journal_Count).Value
+jorunal_FN_DIR(journal_Count) = ActiveWorkbook.Sheets(1).Range("D" & 13 + journal_Count).Value
+Next
+
+For Count = 1 To (my_LR - 13)
+
+Workbooks(misFile).Activate
+    
+    myF_Ext = Split(journal_FN(Count), ".")(1)
+         'Only save files with named extensions
+            Select Case myF_Ext
+                Case "xls", "xlsx"
+                    
+                    Tex_Code_File = ActiveWorkbook.Sheets(2).Range("B5").Value
+                    Tex_Code_File_Dir = ActiveWorkbook.Sheets(2).Range("B6").Value
+                    
+                    Workbooks.Open Filename:=jorunal_FN_DIR(Count)
+                    Workbooks.Open Filename:=Tex_Code_File_Dir & "\" & Tex_Code_File
+                    Workbooks(Tex_Code_File).Activate
+                    
+                    SKB1_Dump_LR = ActiveWorkbook.Sheets("SKB1 Dump").Range("B" & 60000).End(xlUp).Row
+                    GTOpFields_LR = ActiveWorkbook.Sheets("GTOpFields").Range("A" & 60000).End(xlUp).Row
+                    SKA1_Dump_LR = ActiveWorkbook.Sheets("SKA1 Dump").Range("B" & 60000).End(xlUp).Row
+                    
+                    Set SKB1_Dump = ActiveWorkbook.Sheets("SKB1 Dump").Range("D4:Z" & SKB1_Dump_LR)
+                    Set GTOpFields = ActiveWorkbook.Sheets("GTOpFields").Range("B3:Z" & GTOpFields_LR)
+                    Set SKA1_Dump = ActiveWorkbook.Sheets("SKA1 Dump").Range("D4:Z" & SKA1_Dump_LR)
+                    
+                    Workbooks(journal_FN(Count)).Activate
+                            
+                    ActiveWorkbook.Sheets("Upload Data").Select
+                    ActiveSheet.AutoFilterMode = False
+                    this_Journal_LR = ActiveWorkbook.Sheets("Upload Data").Range("A" & 60000).End(xlUp).Row
+                    Range("A6:AZ" & this_Journal_LR).Select
+                    Selection.Copy
+                    Range("A6:AZ" & this_Journal_LR).PasteSpecial xlPasteValues
+                    total_Debits = ActiveWorkbook.Sheets("Upload Data").Range("B1").Value
+                    total_Credits = ActiveWorkbook.Sheets("Upload Data").Range("B2").Value
+                    Posting_Date = ActiveWorkbook.Sheets("Upload Data").Range("A7").Value
+                    Document_Date = ActiveWorkbook.Sheets("Upload Data").Range("C7").Value
+                    Currency_Type = ActiveWorkbook.Sheets("Upload Data").Range("D7").Value
+                    
+                    ActiveWorkbook.Sheets("Upload Data").Range("A7") = Format(Posting_Date, "YYYY.MM.DD")
+                    ActiveWorkbook.Sheets("Upload Data").Range("C7") = Format(Document_Date, "YYYY.MM.DD")
+                    GT = total_Debits - total_Credits
+                    my_GT = Format(GT, 0#)
+                If my_GT = 0 And Currency_Type = "AUD" Then
+                    Range("A9:AZ" & this_Journal_LR).Select
+                    Selection.AutoFilter
+                    'loop start
+                        For i = 1 To this_Journal_LR - 9
+                        
+                        GL_Account = ActiveWorkbook.Sheets("Upload Data").Range("A" & 9 + i).Value
+                        Brand_code = ActiveWorkbook.Sheets("Upload Data").Range("G" & 9 + i).Value
+                        ProfitCenter = ActiveWorkbook.Sheets("Upload Data").Range("H" & 9 + i).Value
+                        CostCenter = ActiveWorkbook.Sheets("Upload Data").Range("J" & 9 + i).Value
+                        TextField = ActiveWorkbook.Sheets("Upload Data").Range("P" & 9 + i).Value
+                        Reference_1 = ActiveWorkbook.Sheets("Upload Data").Range("P" & 9 + i).Value
+                        GL_left_Digit = Left(GL_Account, 1)
+                        
+                        Tex_code = ActiveWorkbook.Sheets("Upload Data").Range("F" & 9 + i).Value
+                        
+                        If Tex_code = "" Then
+                        ActiveWorkbook.Sheets("Upload Data").Range("F" & 9 + i).Value = Application.WorksheetFunction.VLookup(GL_Account, SKB1_Dump, 19, False)
+                        Else
+                        'do nothing
+                        End If
+                        Next
+                    'loop close
+                    'loop start
+                        For j = 1 To 1
+                            
+                            For dbc = 1 To this_Journal_LR - 9
+                            Brand_code = ActiveWorkbook.Sheets("Upload Data").Range("G" & 9 + dbc).Value
+                            GL_Account = ActiveWorkbook.Sheets("Upload Data").Range("A" & 9 + dbc).Value
+                            GL_left_Digit = Left(GL_Account, 1)
+                            If GL_left_Digit <= 4 And Brand_code = "" Then
+                        
+                                ActiveWorkbook.Sheets("Upload Data").Range("G" & 9 + dbc).Value = 9999 'Dummay Brand code
+                            End If
+                            Next
+                            
+                        Range("A9:AZ" & this_Journal_LR).AutoFilter Field:=7, Criteria1:=9999
+                        dowonRowNo = ActiveSheet.AutoFilter.Range.Offset(1).SpecialCells(xlCellTypeVisible).Row
+                        dowonCell_V = Range("G" & dowonRowNo).Value
+                        
+                        If dowonCell_V = 9999 Then
+                        
+                        msg1 = "Macro updated the Dummay Brand code 9999 in this Journal."
+                        msg2 = "If this is OK then select ""YES"" for continue execution else select ""NO"" for update Brand Code manually from SAP T-code  FS00."
+                        msg3 = "After update the Brand Code please save and close this Journal file and Run this macro again"
+                        answer = MsgBox(msg1 + Chr(10) + Chr(10) + msg2 + Chr(10) + Chr(10) + msg3, vbYesNo)
+                            If answer = vbYes Then
+                            ActiveSheet.AutoFilterMode = False
+                            Else
+                            Workbooks(Tex_Code_File).Activate
+                            ActiveWorkbook.Close
+                            Workbooks(journal_FN(Count)).Activate
+                            Range("G9").Select
+                            Exit Sub
+                            End If
+                        Else
+                        ActiveSheet.AutoFilterMode = False
+                        End If
+                                              
+                        Next
+                    'loop close
+                    
+
+                        Range("A9:AZ" & this_Journal_LR).AutoFilter Field:=10, Criteria1:="="
+                        dowonRowNo = ActiveSheet.AutoFilter.Range.Offset(1).SpecialCells(xlCellTypeVisible).Row
+                        If dowonRowNo <= this_Journal_LR Then
+                        
+                        line11 = "For update Cost Centers press ""YES"" else ""No"" for continue next execution."
+                        MsgBox "Put the correct Cost Center in the Blank Cells according to G/L Account Number"
+                        answer = MsgBox(line11 + Chr(10) + Chr(10), vbYesNo)
+                            If answer = vbYes Then
+                            Workbooks(Tex_Code_File).Activate
+                            ActiveWorkbook.Close
+                            Workbooks(journal_FN(Count)).Activate
+                            Range("J9").Select
+                            Exit Sub
+                            Else
+                            ActiveSheet.AutoFilterMode = False
+                            End If
+                        Else
+                        ActiveSheet.AutoFilterMode = False
+                        End If
+                                             
+                        Range("A9:AZ" & this_Journal_LR).AutoFilter Field:=16, Criteria1:="="
+                        dowonRowNo = ActiveSheet.AutoFilter.Range.Offset(1).SpecialCells(xlCellTypeVisible).Row
+                        If dowonRowNo <= this_Journal_LR Then
+                        Range("P9").Select
+                        msg4 = "Please update the ""Text Field"" in the Blank cells."
+                        msg5 = "After updating the ""Text Field""  Please save and close this Journal file."
+                        msg6 = "Please Run This Macro again"
+                        
+                        line12 = "For update ""Text Fields"" press ""YES"" else ""No"" for continue next execution."
+                        
+                        MsgBox msg4 + Chr(10) + msg5 + Chr(10) + msg6
+                        answer = MsgBox(line12 + Chr(10) + Chr(10), vbYesNo)
+                            
+                            If answer = vbYes Then
+                            Workbooks(Tex_Code_File).Activate
+                            ActiveWorkbook.Close
+                            Workbooks(journal_FN(Count)).Activate
+                            Range("P9").Select
+                            Exit Sub
+                            Else
+                            ActiveSheet.AutoFilterMode = False
+                            End If
+                        
+                        Else
+                        ActiveSheet.AutoFilterMode = False
+                        End If
+                    
+                    'loop Start
+                        For l = 1 To this_Journal_LR - 9
+                        Workbooks(journal_FN(Count)).Activate
+                        ActiveWorkbook.Sheets("Upload Data").Range("R" & 9 + l).Value = "TD"
+                        Next
+                    'loop close
+                    
+                    'loop Start
+                        For x = 1 To this_Journal_LR - 9
+                        B_code = ActiveWorkbook.Sheets("Upload Data").Range("G" & 9 + x).Value
+                        If B_code = 9999 Then
+                        Workbooks(journal_FN(Count)).Activate
+                        ActiveWorkbook.Sheets("Upload Data").Range("Y" & 9 + x).Value = "AAM"
+                        Else
+                        'do nothing
+                        End If
+                        Next
+                    'loop close
+                        
+                        
+                        
+                        journal_Srting = Application.WorksheetFunction.Find(".", journal_FN(Count), 1)
+                        journal_FileName = Left(journal_FN(Count), journal_Srting - 1)
+                        
+                        For c = 1 To my_LR - 13
+                        msg_Ext = Split(jorunal_FN_DIR(c), ".")(1)
+                        msg_Root = Application.WorksheetFunction.Find(journal_FileName, jorunal_FN_DIR(c), 1)
+                        
+                        If msg_Ext = "msg" And msg_Root > 1 Then
+                        ActiveWorkbook.Sheets("BACKUP").Select
+                        Cells.Select
+                        Selection.ClearContents
+                        Range("D8").Select
+                        ActiveSheet.OLEObjects.Add(Filename:=jorunal_FN_DIR(c), Link:= _
+                        False, DisplayAsIcon:=True, IconIndex:=1, IconLabel:=jorunal_FN_DIR(c)).Select
+
+                        Sheets("Object").Activate
+                        Sheets("Upload Data").Select
+                        ActiveWorkbook.Save
+                        ActiveWorkbook.Close
+                        Workbooks(Tex_Code_File).Activate
+                        ActiveWorkbook.Close
+                        MsgBox "Your Journal have been saved in your shardrive, and it is ready for post"
+                        Else
+                        '
+                        End If
+                        Next
+                                               
+                    
+                    Else
+                    line1 = "In this Open Jurnal May ""Total Debits"" & ""Total Credits"" would not be ZERO"
+                    line2 = "Or Currency Type would not be correct"
+                    line3 = "Please make these correction manually and after that save & close this Journal "
+                    line4 = "and Run this MACRO again."
+                    Workbooks(Tex_Code_File).Activate
+                    ActiveWorkbook.Close
+                    MsgBox line1 & Chr(10) & "Total Debits :" & total_Debits & Chr(10) & "Total Credits :" & total_Credits & Chr(10) & "Debit Credit Variance:" & my_GT & Chr(10) & line2 & "Currency Type :" & Currency_Type & Chr(10) & Chr(10) & line3 & line4
+                    End If
+                    
+                    
+                    'Selection.Date Format:=YYYY.MM.DD
+                
+                Case Else
+                    'do nothing
+            End Select
+
+
+
+Next
+
+
+End Sub
