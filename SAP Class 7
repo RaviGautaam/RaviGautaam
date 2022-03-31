@@ -1,0 +1,137 @@
+
+Option Explicit
+
+Private PrSheets As New Collection
+
+'*******************************************************************************
+'   Initialize SAP sheets collection
+'*******************************************************************************
+Private Sub Class_Initialize()
+
+  Dim ws As Worksheet
+  
+  For Each ws In ThisWorkbook.Worksheets
+    If Left(ws.CodeName, 8) = "SAPSheet" Then
+      PrSheets.Add ws
+      ws.Protect
+    End If
+  Next ws
+  
+  If Me.count = 0 Then
+    Set ws = ThisWorkbook.Worksheets.Add
+    PrSheets.Add ws
+    ws.Protect
+  End If
+
+End Sub
+'*******************************************************************************
+'   Get number of SAP sheet
+'*******************************************************************************
+Property Get count() As Long
+ 
+  count = PrSheets.count
+
+End Property
+'*******************************************************************************
+'   Get SAP sheet by index
+'*******************************************************************************
+Property Get item(Index As Long) As Worksheet
+ 
+  Dim ws As Worksheet
+  Dim ws1 As Worksheet
+  Dim NoSheets As Long
+  Dim XlIndex As Long
+  
+  NoSheets = Me.count
+  If Index <= NoSheets Then
+    Set item = PrSheets.item(Index)
+  Else
+    Set ws1 = PrSheets.item(1)
+    Set ws = PrSheets.item(NoSheets)
+    While NoSheets < Index
+'      Set ws = ThisWorkbook.Worksheets.Add(after:=ws)
+      XlIndex = ws.Index
+      Set ws = ThisWorkbook.Worksheets.Add(after:=ws)
+'      ws1.Copy after:=ws
+      XlIndex = XlIndex + 1
+      Set ws = ThisWorkbook.Worksheets(XlIndex)
+      ws.Protect
+      PrSheets.Add ws
+      NoSheets = Me.count
+    Wend
+    Set item = ws
+  End If
+  
+End Property
+'*******************************************************************************
+'   Set sheet title
+'*******************************************************************************
+Property Let title(Index As Long, SAPTitle As String)
+
+  Dim ws As Worksheet
+  Dim XlTitle As String
+  Dim I As Long
+  Dim No As String
+  Dim SLen As Long
+
+    
+  XlTitle = SAPTitle
+  If XlTitle = "" Then
+    XlTitle = "SAPSheet" & Index
+  End If
+  Set ws = Me.item(Index)
+  On Error Resume Next
+  ws.Name = XlTitle
+  If Err.Number <> 0 Then
+'   Title is too long, containes invalid characters or is not unique
+    XlTitle = SAPTitleToXlTitle(XlTitle)
+    On Error Resume Next
+    ws.Name = XlTitle
+    If Err.Number <> 0 Then
+'     Title is not unique
+      For I = 1 To 9
+        No = I
+        SLen = 29 - Len(No)
+        On Error Resume Next
+        ws.Name = Left(XlTitle, SLen) & "(" & No & ")"
+        If Err.Number = 0 Then
+          Exit For
+        End If
+      Next I
+    End If
+  End If
+
+End Property
+'*******************************************************************************
+'   Get sheet title
+'*******************************************************************************
+Property Get title(Index As Long) As String
+
+  Dim ws As Worksheet
+  
+  Set ws = Me.item(Index)
+  title = ws.Name
+
+End Property
+'*******************************************************************************
+'   Convert SAP sheet title to valid Excel title
+'*******************************************************************************
+Private Function SAPTitleToXlTitle(SAPTitle As String) As String
+
+  Dim I As Long
+  Dim SLen As Long
+  Dim XlTitle As String * 31
+  
+  XlTitle = SAPTitle
+  SLen = Len(XlTitle)
+  For I = 1 To SLen
+    Select Case Mid(XlTitle, I, 1)
+      Case "*", ":", "\", "/", "?"
+        Mid(XlTitle, I, 1) = " "
+      Case Else
+    End Select
+  Next I
+  SAPTitleToXlTitle = XlTitle
+  
+End Function
+
