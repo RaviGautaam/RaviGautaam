@@ -1,0 +1,301 @@
+Sub weeklyforcast()
+Dim mFile As String
+Dim mPath As String
+Dim bFile As Workbook
+
+Dim rRange As Range
+
+mFile = ThisWorkbook.Name
+mPath = ThisWorkbook.Path
+
+
+OpenBaseFile = Application.GetOpenFilename("Excel Files(*.xl*),*.xl*", Title:="Select your raw data file")
+If OpenBaseFile <> "" Then
+    Workbooks.Open Filename:=OpenBaseFile
+    Set bFile = ActiveWorkbook
+    
+End If
+
+Application.ScreenUpdating = False
+'start time
+StartTime = Timer
+
+bFile.Activate
+bFile.Worksheets(1).Select
+
+lastRow = Range("A" & Rows.Count).End(xlUp).Row
+tCol = Cells(1, Columns.Count).End(xlToLeft).Column
+For c = 1 To tCol
+    Cells(1, c).Select
+    If Cells(1, c).Value = "Net due date" Then
+        NetDueDateC = c
+    End If
+    'If Cells(1, c).Value = "Net due date" Then
+    '    NetDueDateC = c
+    'End If
+
+    If Cells(1, c).Value = "Vendor" Then
+        VendorC = c
+    End If
+    
+    If Cells(1, c).Value = "Sub type" Then
+        SubTypeC = c
+    End If
+
+    If Cells(1, c).Value = "Vendor type " Then
+        VendorTypeC = c
+    End If
+
+
+Next
+
+Cells(1, tCol + 1).Value = "Week"
+bFile.Activate
+Set rRange = Range(Cells(1, 1), Cells(lastRow, tCol + 5))
+
+For rRow = 2 To lastRow
+    NetDueDateV = Range("D" & rRow).Value
+    SubTypeV = Range("N" & rRow).Value
+    VendorTypeV = Range("O" & rRow).Value
+    If SubTypeV = "TFT" And VendorTypeV = "Critical" Then
+        If NetDueDateV <= Date Then
+            If Format(Date, "ddd") = "Thu" Then Range("P" & rRow).Value = Date + 6
+            If Format(Date, "ddd") = "Fri" Then Range("P" & rRow).Value = Date + 5
+            If Format(Date, "ddd") = "Sat" Then Range("P" & rRow).Value = Date + 4
+            If Format(Date, "ddd") = "Sun" Then Range("P" & rRow).Value = Date + 3
+            If Format(Date, "ddd") = "Mon" Then Range("P" & rRow).Value = Date + 2
+            If Format(Date, "ddd") = "Tue" Then Range("P" & rRow).Value = Date + 1
+            If Format(Date, "ddd") = "Wed" Then Range("P" & rRow).Value = Date
+        End If
+       If NetDueDateV > Date Then
+            If Format(NetDueDateV, "ddd") = "Thu" Then Range("P" & rRow).Value = NetDueDateV - 1
+            If Format(NetDueDateV, "ddd") = "Fri" Then Range("P" & rRow).Value = NetDueDateV - 2
+            If Format(NetDueDateV, "ddd") = "Sat" Then Range("P" & rRow).Value = NetDueDateV - 3
+            If Format(NetDueDateV, "ddd") = "Sun" Then Range("P" & rRow).Value = NetDueDateV - 4
+            If Format(NetDueDateV, "ddd") = "Mon" Then Range("P" & rRow).Value = NetDueDateV - 5
+            If Format(NetDueDateV, "ddd") = "Tue" Then Range("P" & rRow).Value = NetDueDateV - 6
+            If Format(NetDueDateV, "ddd") = "Wed" Then Range("P" & rRow).Value = NetDueDateV
+       End If
+    End If
+    
+    If SubTypeV = "Utility" And VendorTypeV = "Critical" Then
+        If NetDueDateV <= Date Then
+            If Format(Date, "ddd") = "Thu" Then Range("P" & rRow).Value = Date + 6
+            If Format(Date, "ddd") = "Fri" Then Range("P" & rRow).Value = Date + 5
+            If Format(Date, "ddd") = "Sat" Then Range("P" & rRow).Value = Date + 4
+            If Format(Date, "ddd") = "Sun" Then Range("P" & rRow).Value = Date + 3
+            If Format(Date, "ddd") = "Mon" Then Range("P" & rRow).Value = Date + 2
+            If Format(Date, "ddd") = "Tue" Then Range("P" & rRow).Value = Date + 1
+            If Format(Date, "ddd") = "Wed" Then Range("P" & rRow).Value = Date
+        End If
+       If NetDueDateV > Date Then
+            If Format(NetDueDateV, "ddd") = "Thu" Then Range("P" & rRow).Value = NetDueDateV + 6
+            If Format(NetDueDateV, "ddd") = "Fri" Then Range("P" & rRow).Value = NetDueDateV + 5
+            If Format(NetDueDateV, "ddd") = "Sat" Then Range("P" & rRow).Value = NetDueDateV + 4
+            If Format(NetDueDateV, "ddd") = "Sun" Then Range("P" & rRow).Value = NetDueDateV + 3
+            If Format(NetDueDateV, "ddd") = "Mon" Then Range("P" & rRow).Value = NetDueDateV + 2
+            If Format(NetDueDateV, "ddd") = "Tue" Then Range("P" & rRow).Value = NetDueDateV + 1
+            If Format(NetDueDateV, "ddd") = "Wed" Then Range("P" & rRow).Value = NetDueDateV
+       End If
+    End If
+    
+    If SubTypeV = "Foreign" And VendorTypeV = "Critical" Then
+        If NetDueDateV <= Date Then
+            If Format(Date, "ddd") = "Thu" Then Range("P" & rRow).Value = Date
+            If Format(Date, "ddd") = "Fri" Then Range("P" & rRow).Value = Date + 6
+            If Format(Date, "ddd") = "Sat" Then Range("P" & rRow).Value = Date + 5
+            If Format(Date, "ddd") = "Sun" Then Range("P" & rRow).Value = Date + 4
+            If Format(Date, "ddd") = "Mon" Then Range("P" & rRow).Value = Date + 3
+            If Format(Date, "ddd") = "Tue" Then Range("P" & rRow).Value = Date + 2
+            If Format(Date, "ddd") = "Wed" Then Range("P" & rRow).Value = Date + 1
+        End If
+       If NetDueDateV > Date Then
+            If Format(NetDueDateV, "ddd") = "Thu" Then Range("P" & rRow).Value = NetDueDateV
+            If Format(NetDueDateV, "ddd") = "Fri" Then Range("P" & rRow).Value = NetDueDateV + 6
+            If Format(NetDueDateV, "ddd") = "Sat" Then Range("P" & rRow).Value = NetDueDateV + 5
+            If Format(NetDueDateV, "ddd") = "Sun" Then Range("P" & rRow).Value = NetDueDateV + 4
+            If Format(NetDueDateV, "ddd") = "Mon" Then Range("P" & rRow).Value = NetDueDateV + 3
+            If Format(NetDueDateV, "ddd") = "Tue" Then Range("P" & rRow).Value = NetDueDateV + 2
+            If Format(NetDueDateV, "ddd") = "Wed" Then Range("P" & rRow).Value = NetDueDateV + 1
+       End If
+    End If
+    If SubTypeV = "Customer" And VendorTypeV = "Customer" Then
+        If NetDueDateV <= Date Then
+            If Format(Date, "ddd") = "Thu" Then Range("P" & rRow).Value = Date + 6
+            If Format(Date, "ddd") = "Fri" Then Range("P" & rRow).Value = Date + 5
+            If Format(Date, "ddd") = "Sat" Then Range("P" & rRow).Value = Date + 4
+            If Format(Date, "ddd") = "Sun" Then Range("P" & rRow).Value = Date + 3
+            If Format(Date, "ddd") = "Mon" Then Range("P" & rRow).Value = Date + 2
+            If Format(Date, "ddd") = "Tue" Then Range("P" & rRow).Value = Date + 1
+            If Format(Date, "ddd") = "Wed" Then Range("P" & rRow).Value = Date
+        End If
+       If NetDueDateV > Date Then
+            If Format(NetDueDateV, "ddd") = "Thu" Then Range("P" & rRow).Value = NetDueDateV + 6
+            If Format(NetDueDateV, "ddd") = "Fri" Then Range("P" & rRow).Value = NetDueDateV + 5
+            If Format(NetDueDateV, "ddd") = "Sat" Then Range("P" & rRow).Value = NetDueDateV + 4
+            If Format(NetDueDateV, "ddd") = "Sun" Then Range("P" & rRow).Value = NetDueDateV + 3
+            If Format(NetDueDateV, "ddd") = "Mon" Then Range("P" & rRow).Value = NetDueDateV + 2
+            If Format(NetDueDateV, "ddd") = "Tue" Then Range("P" & rRow).Value = NetDueDateV + 1
+            If Format(NetDueDateV, "ddd") = "Wed" Then Range("P" & rRow).Value = NetDueDateV
+       End If
+    End If
+    If SubTypeV = "Local" And VendorTypeV = "Trade payables" Then
+        If NetDueDateV <= Application.WorksheetFunction.EoMonth(Date, 0) Then
+            If Format(Application.WorksheetFunction.EoMonth(Date, 0), "ddd") = "Thu" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 6
+            If Format(Application.WorksheetFunction.EoMonth(Date, 0), "ddd") = "Fri" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 5
+            If Format(Application.WorksheetFunction.EoMonth(Date, 0), "ddd") = "Sat" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 4
+            If Format(Application.WorksheetFunction.EoMonth(Date, 0), "ddd") = "Sun" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 3
+            If Format(Application.WorksheetFunction.EoMonth(Date, 0), "ddd") = "Mon" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 2
+            If Format(Application.WorksheetFunction.EoMonth(Date, 0), "ddd") = "Tue" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 1
+            If Format(Application.WorksheetFunction.EoMonth(Date, 0), "ddd") = "Wed" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 7
+        End If
+        If NetDueDateV > Application.WorksheetFunction.EoMonth(Date, 0) Then
+            If NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) = 1 Then
+                If Format(Date, "ddd") = "Thu" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 6
+                If Format(Date, "ddd") = "Fri" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 5
+                If Format(Date, "ddd") = "Sat" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 4
+                If Format(Date, "ddd") = "Sun" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 3
+                If Format(Date, "ddd") = "Mon" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 2
+                If Format(Date, "ddd") = "Tue" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 1
+                If Format(Date, "ddd") = "Wed" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 7
+            End If
+            If NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) = 2 Then
+                If Format(Date, "ddd") = "Thu" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 6
+                If Format(Date, "ddd") = "Fri" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 5
+                If Format(Date, "ddd") = "Sat" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 4
+                If Format(Date, "ddd") = "Sun" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 3
+                If Format(Date, "ddd") = "Mon" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 2
+                If Format(Date, "ddd") = "Tue" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 1
+                If Format(Date, "ddd") = "Wed" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 7
+            End If
+            If NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) = 3 Then
+                If Format(Date, "ddd") = "Thu" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 6
+                If Format(Date, "ddd") = "Fri" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 5
+                If Format(Date, "ddd") = "Sat" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 4
+                If Format(Date, "ddd") = "Sun" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 3
+                If Format(Date, "ddd") = "Mon" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 2
+                If Format(Date, "ddd") = "Tue" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 1
+                If Format(Date, "ddd") = "Wed" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 7
+            End If
+            If NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) = 4 Then
+                If Format(Date, "ddd") = "Thu" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 6
+                If Format(Date, "ddd") = "Fri" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 5
+                If Format(Date, "ddd") = "Sat" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 4
+                If Format(Date, "ddd") = "Sun" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 3
+                If Format(Date, "ddd") = "Mon" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 2
+                If Format(Date, "ddd") = "Tue" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 1
+                If Format(Date, "ddd") = "Wed" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 7
+            End If
+            If NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) = 5 Then
+                If Format(Date, "ddd") = "Thu" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 6
+                If Format(Date, "ddd") = "Fri" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 5
+                If Format(Date, "ddd") = "Sat" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 4
+                If Format(Date, "ddd") = "Sun" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 3
+                If Format(Date, "ddd") = "Mon" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 2
+                If Format(Date, "ddd") = "Tue" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 1
+                If Format(Date, "ddd") = "Wed" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 7
+            End If
+            If NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) = 6 Then
+                If Format(Date, "ddd") = "Thu" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 6
+                If Format(Date, "ddd") = "Fri" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 5
+                If Format(Date, "ddd") = "Sat" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 4
+                If Format(Date, "ddd") = "Sun" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 3
+                If Format(Date, "ddd") = "Mon" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 2
+                If Format(Date, "ddd") = "Tue" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 1
+                If Format(Date, "ddd") = "Wed" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 7
+            End If
+            If Format(Application.WorksheetFunction.EoMonth(NetDueDateV, 0), "ddd") = "Thu" And NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) > 6 Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(NetDueDateV, 0) + 6
+            If Format(Application.WorksheetFunction.EoMonth(NetDueDateV, 0), "ddd") = "Fri" And NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) > 6 Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(NetDueDateV, 0) + 5
+            If Format(Application.WorksheetFunction.EoMonth(NetDueDateV, 0), "ddd") = "Sat" And NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) > 6 Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(NetDueDateV, 0) + 4
+            If Format(Application.WorksheetFunction.EoMonth(NetDueDateV, 0), "ddd") = "Sun" And NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) > 6 Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(NetDueDateV, 0) + 3
+            If Format(Application.WorksheetFunction.EoMonth(NetDueDateV, 0), "ddd") = "Mon" And NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) > 6 Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(NetDueDateV, 0) + 2
+            If Format(Application.WorksheetFunction.EoMonth(NetDueDateV, 0), "ddd") = "Tue" And NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) > 6 Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(NetDueDateV, 0) + 1
+            If Format(Application.WorksheetFunction.EoMonth(NetDueDateV, 0), "ddd") = "Wed" And NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) > 6 Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(NetDueDateV, 0) + 7
+        End If
+    End If
+'========================================================================
+    If SubTypeV = "Foreign" And VendorTypeV = "Trade payables" Then
+        If NetDueDateV <= Application.WorksheetFunction.EoMonth(Date, 0) Then
+            If Format(Application.WorksheetFunction.EoMonth(Date, 0), "ddd") = "Thu" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 7
+            If Format(Application.WorksheetFunction.EoMonth(Date, 0), "ddd") = "Fri" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 6
+            If Format(Application.WorksheetFunction.EoMonth(Date, 0), "ddd") = "Sat" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 5
+            If Format(Application.WorksheetFunction.EoMonth(Date, 0), "ddd") = "Sun" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 4
+            If Format(Application.WorksheetFunction.EoMonth(Date, 0), "ddd") = "Mon" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 3
+            If Format(Application.WorksheetFunction.EoMonth(Date, 0), "ddd") = "Tue" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 2
+            If Format(Application.WorksheetFunction.EoMonth(Date, 0), "ddd") = "Wed" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 1
+        End If
+        If NetDueDateV > Application.WorksheetFunction.EoMonth(Date, 0) Then
+            If NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) = 1 Then
+                If Format(Date, "ddd") = "Thu" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 7
+                If Format(Date, "ddd") = "Fri" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 6
+                If Format(Date, "ddd") = "Sat" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 5
+                If Format(Date, "ddd") = "Sun" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 4
+                If Format(Date, "ddd") = "Mon" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 3
+                If Format(Date, "ddd") = "Tue" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 2
+                If Format(Date, "ddd") = "Wed" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 1
+            End If
+            If NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) = 2 Then
+                If Format(Date, "ddd") = "Thu" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 7
+                If Format(Date, "ddd") = "Fri" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 6
+                If Format(Date, "ddd") = "Sat" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 5
+                If Format(Date, "ddd") = "Sun" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 4
+                If Format(Date, "ddd") = "Mon" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 3
+                If Format(Date, "ddd") = "Tue" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 2
+                If Format(Date, "ddd") = "Wed" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 1
+            End If
+            If NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) = 3 Then
+                If Format(Date, "ddd") = "Thu" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 7
+                If Format(Date, "ddd") = "Fri" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 6
+                If Format(Date, "ddd") = "Sat" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 5
+                If Format(Date, "ddd") = "Sun" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 4
+                If Format(Date, "ddd") = "Mon" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 3
+                If Format(Date, "ddd") = "Tue" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 2
+                If Format(Date, "ddd") = "Wed" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 1
+            End If
+            If NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) = 4 Then
+                If Format(Date, "ddd") = "Thu" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 7
+                If Format(Date, "ddd") = "Fri" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 6
+                If Format(Date, "ddd") = "Sat" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 5
+                If Format(Date, "ddd") = "Sun" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 4
+                If Format(Date, "ddd") = "Mon" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 3
+                If Format(Date, "ddd") = "Tue" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 2
+                If Format(Date, "ddd") = "Wed" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 1
+            End If
+            If NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) = 5 Then
+                If Format(Date, "ddd") = "Thu" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 7
+                If Format(Date, "ddd") = "Fri" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 6
+                If Format(Date, "ddd") = "Sat" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 5
+                If Format(Date, "ddd") = "Sun" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 4
+                If Format(Date, "ddd") = "Mon" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 3
+                If Format(Date, "ddd") = "Tue" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 2
+                If Format(Date, "ddd") = "Wed" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 1
+            End If
+            If NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) = 6 Then
+                If Format(Date, "ddd") = "Thu" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 7
+                If Format(Date, "ddd") = "Fri" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 6
+                If Format(Date, "ddd") = "Sat" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 5
+                If Format(Date, "ddd") = "Sun" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 4
+                If Format(Date, "ddd") = "Mon" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 3
+                If Format(Date, "ddd") = "Tue" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 2
+                If Format(Date, "ddd") = "Wed" Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(Date, 0) + 1
+            End If
+            If Format(Application.WorksheetFunction.EoMonth(NetDueDateV, 0), "ddd") = "Thu" And NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) > 6 Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(NetDueDateV, 0) + 7
+            If Format(Application.WorksheetFunction.EoMonth(NetDueDateV, 0), "ddd") = "Fri" And NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) > 6 Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(NetDueDateV, 0) + 6
+            If Format(Application.WorksheetFunction.EoMonth(NetDueDateV, 0), "ddd") = "Sat" And NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) > 6 Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(NetDueDateV, 0) + 5
+            If Format(Application.WorksheetFunction.EoMonth(NetDueDateV, 0), "ddd") = "Sun" And NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) > 6 Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(NetDueDateV, 0) + 4
+            If Format(Application.WorksheetFunction.EoMonth(NetDueDateV, 0), "ddd") = "Mon" And NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) > 6 Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(NetDueDateV, 0) + 3
+            If Format(Application.WorksheetFunction.EoMonth(NetDueDateV, 0), "ddd") = "Tue" And NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) > 6 Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(NetDueDateV, 0) + 2
+            If Format(Application.WorksheetFunction.EoMonth(NetDueDateV, 0), "ddd") = "Wed" And NetDueDateV - Application.WorksheetFunction.EoMonth(Date, 0) > 6 Then Range("P" & rRow).Value = Application.WorksheetFunction.EoMonth(NetDueDateV, 0) + 1
+        End If
+    End If
+    
+Next
+
+ActiveSheet.AutoFilterMode = False
+Range(Cells(1, 1), Cells(lastRow, tCol + 1)).NumberFormat = "mm/dd/yyyy"
+'end time Calculation
+MinutesElapsed = Format((Timer - StartTime) / 86400, "hh:mm:ss")
+MsgBox "Your Activity is successfully completed in :" & Chr(10) & MinutesElapsed & " minutes"
+Application.ScreenUpdating = True
+
+End Sub
