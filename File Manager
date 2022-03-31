@@ -1,0 +1,283 @@
+'**********************************************************************
+'*                                                                    *
+'* Written by Vish Mishra - http://www.LearnExcelMacro.Com            *
+'* You can list down all the files with properties at once place      *
+'* Just by one click using this File Manager                          *
+'*                                                                    *
+'**********************************************************************
+
+Public fPath As String
+Public IsSubFolder As Boolean
+Public iRow As Long
+Public FSO As Scripting.FileSystemObject
+Public SourceFolder As Scripting.folder, SubFolder As Scripting.folder
+Public FileItem As Scripting.File
+Public IsFileTypeExists As Boolean
+
+
+
+Public Sub ListFilesInFolder(SourceFolder As Scripting.folder, IncludeSubfolders As Boolean)
+    
+    
+    On Error Resume Next
+    For Each FileItem In SourceFolder.Files
+        
+        
+' display file properties
+        Cells(iRow, 2).Formula = iRow - 13
+        Cells(iRow, 3).Formula = FileItem.Name
+        Cells(iRow, 4).Formula = FileItem.Path
+        Cells(iRow, 5).Formula = Int(FileItem.Size / 1024)
+        Cells(iRow, 6).Formula = FileItem.Type
+        Cells(iRow, 7).Formula = FileItem.DateLastModified
+        Cells(iRow, 8).Select
+        Selection.Hyperlinks.Add Anchor:=Selection, Address:= _
+        FileItem.Path, TextToDisplay:="Click Here to Open"
+        
+'Cells(iRow, 8).Formula = "=HYPERLINK(""" & FileItem.Path & """,""" & "Click Here to Open" & """)"
+        
+        iRow = iRow + 1 ' next row number
+        Next FileItem
+        
+        If IncludeSubfolders Then
+            For Each SubFolder In SourceFolder.SubFolders
+                ListFilesInFolder SubFolder, True
+                Next SubFolder
+            End If
+            
+            Set FileItem = Nothing
+            Set SourceFolder = Nothing
+            Set FSO = Nothing
+            
+            
+            
+        End Sub
+        
+        
+        
+        
+        Public Sub ListFilesInFolderXtn(SourceFolder As Scripting.folder, IncludeSubfolders As Boolean)
+            
+            
+            On Error Resume Next
+            Dim FileArray As Variant
+            
+            FileArray = Get_File_Type_Array
+            
+            For Each FileItem In SourceFolder.Files
+                
+                Call ReturnFileType(FileItem.Type, FileArray)
+                
+                If IsFileTypeExists = True Then
+                    
+                    Cells(iRow, 2).Formula = iRow - 13
+                    Cells(iRow, 3).Formula = FileItem.Name
+                    Cells(iRow, 4).Formula = FileItem.Path
+                    Cells(iRow, 5).Formula = Int(FileItem.Size / 1024)
+                    Cells(iRow, 6).Formula = FileItem.Type
+                    Cells(iRow, 7).Formula = FileItem.DateLastModified
+                    
+                    Cells(iRow, 8).Select
+                    Selection.Hyperlinks.Add Anchor:=Selection, Address:= _
+                    FileItem.Path, TextToDisplay:="Click Here to Open"
+                    
+'Cells(iRow, 8).Formula = "=HYPERLINK(""" & FileItem.Path & """,""" & "Click Here to Open" & """)"
+                    
+                    iRow = iRow + 1 ' next row number
+                    
+                End If
+                Next FileItem
+                
+                If IncludeSubfolders Then
+                    For Each SubFolder In SourceFolder.SubFolders
+                        ListFilesInFolderXtn SubFolder, True
+                        Next SubFolder
+                    End If
+                    
+                    Set FileItem = Nothing
+                    Set SourceFolder = Nothing
+                    Set FSO = Nothing
+                    
+                    
+                    
+                End Sub
+                
+                
+                
+                Sub ResultSorting(xlSortOrder As String, sKey1 As String, sKey2 As String, sKey3 As String)
+                    Range("C13").Select
+                    Range(Selection, Selection.End(xlDown)).Select
+                    Range(Selection, Selection.End(xlToRight)).Select
+                    
+                    Selection.Sort Key1:=Range(sKey1), Order1:=xlSortOrder, Key2:=Range(sKey2 _
+                    ), Order2:=xlAscending, Key3:=Range(sKey3), Order3:=xlSortOrder, Header _
+                    :=xlGuess, OrderCustom:=1, MatchCase:=False, Orientation:=xlTopToBottom _
+                    , DataOption1:=xlSortNormal, DataOption2:=xlSortNormal, DataOption3:= _
+                    xlSortNormal
+                    
+                    Range("B14").Select
+                End Sub
+                
+                
+                Sub ClearResult()
+                    If Range("B14") <> "" Then
+                        
+                        Range("B14").Select
+                        Range(Selection, Selection.End(xlDown)).Select
+                        Range(Selection, Selection.End(xlToRight)).Select
+                        Range(Selection.Address).ClearContents
+                    End If
+                End Sub
+                
+                
+                Public Function Get_File_Type_Array() As Variant
+                    
+                    Dim i, j, TotalSelected As Integer
+                    Dim arrList() As String
+                    TotalSelected = 0
+                    For i = 0 To Sheet1.ListBoxFileTypes.ListCount - 1
+                        If Sheet1.ListBoxFileTypes.Selected(i) = True Then
+                            TotalSelected = TotalSelected + 1
+                        End If
+                    Next
+                    
+                    ReDim arrList(0 To TotalSelected - 1) As String
+                    j = 0
+                    i = 0
+                    For i = 0 To Sheet1.ListBoxFileTypes.ListCount - 1
+                        
+                        If Sheet1.ListBoxFileTypes.Selected(i) = True Then
+                            arrList(j) = Left(Sheet1.ListBoxFileTypes.List(i), InStr(1, Sheet1.ListBoxFileTypes.List(i), "(") - 1)
+                            j = j + 1
+                        End If
+                        
+                    Next
+                    
+                    Get_File_Type_Array = arrList
+                    
+                End Function
+                
+                
+                Public Function ReturnFileType(fileType As String, FileArray As Variant) As Boolean
+                    
+                    Dim i As Integer
+                    
+                    IsFileTypeExists = False
+                    
+                    For i = 1 To UBound(FileArray) + 1
+                        
+                        If FileArray(i - 1) = fileType Then
+                            
+                            IsFileTypeExists = True
+                            Exit For
+                            
+                        Else
+                            IsFileTypeExists = False
+                        End If
+                        
+                    Next
+                    
+                End Function
+                
+                
+                
+                Sub textfile(iSeperator As String)
+                    
+                    Dim iRow, iCol
+                    Dim iLine, f
+                    
+                    
+                    
+                    
+                    ThisWorkbook.Activate
+                    Range("B13").Select
+                    TotalRowNumber = Range(Selection, Selection.End(xlDown)).Count - 12
+                    
+                    If iSeperator <> "vbTab" Then
+                        
+                        Open ThisWorkbook.Path & "\File1.txt" For Output As #1
+                        Print #1, ""
+                        Close #1
+                        
+                        Open ThisWorkbook.Path & "\File1.txt" For Append As #1
+                        For iRow = 13 To TotalRowNumber
+                            
+                            iLine = ""
+                            
+                            For iCol = 2 To 7
+                                
+                                iLine = iLine & iSeperator & Cells(iRow, iCol).Value
+                            Next
+                            Print #1, iLine
+                        Next
+                        Close #1
+                        
+                        
+                    Else
+                        
+                        Open ThisWorkbook.Path & "\File1.txt" For Output As #1
+                        Print #1, ""
+                        Close #1
+                        
+                        Open ThisWorkbook.Path & "\File1.txt" For Append As #1
+                        For iRow = 13 To TotalRowNumber
+                            
+                            iLine = ""
+                            
+                            For iCol = 2 To 7
+                                
+                                iLine = iLine & vbTab & Cells(iRow, iCol).Value
+                            Next
+                            Print #1, iLine
+                        Next
+                        Close #1
+                        
+                    End If
+                    
+                    
+                    
+                    f = Shell("C:\WINDOWS\notepad.exe " & ThisWorkbook.Path & "\File1.txt", vbMaximizedFocus)
+                    
+'MsgBox "Your File is saved" & ThisWorkbook.Path & "\File1.txt"
+                    
+                End Sub
+                
+                
+                
+                
+                
+                Sub Export_to_excel()
+                    On Error GoTo err
+                    
+                    
+                    
+                    Dim xlApp As New Excel.Application
+                    Dim xlWB As New Workbook
+                    
+                    Set xlWB = xlApp.Workbooks.Add
+'xlWB.Add
+                    xlApp.Visible = False
+                    
+                    
+                    ThisWorkbook.Activate
+                    Range("B13").Select
+                    Range(Selection, Selection.End(xlDown)).Select
+                    Range(Selection, Selection.End(xlToRight)).Select
+                    
+                    Selection.Copy
+                    
+                    xlApp.Visible = True
+                    xlWB.Activate
+                    xlWB.Sheets("Sheet1").Select
+                    xlWB.Sheets("Sheet1").Range("B2").PasteSpecial Paste:=xlPasteValues
+                    xlWB.Sheets("Sheet1").Cells.Select
+                    xlWB.Sheets("Sheet1").Cells.EntireColumn.AutoFit
+                    xlWB.Sheets("Sheet1").Range("B2").Select
+                    Exit Sub
+err:
+                    MsgBox ("Error Occured while exporting. Try again")
+                    
+                End Sub
+                
+
+
