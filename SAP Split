@@ -1,0 +1,775 @@
+Sub sSAP()
+Dim SapGuiAuto As Object
+Dim aApplication As Object
+Dim cConnection As Object
+Dim sSession As Object
+
+   Set SapGuiAuto = GetObject("SAPGUI")
+   Set aApplication = SapGuiAuto.GetScriptingEngine
+   Set cConnection = aApplication.Children(0)
+   Set sSession = cConnection.Children(0)
+
+'sSession.findById("wnd[0]").resizeWorkingPane 165, 32, False
+sSession.findById("wnd[0]/tbar[0]/okcd").Text = "zfipctr"
+sSession.findById("wnd[0]/tbar[0]/btn[0]").press
+sSession.findById("wnd[0]/usr/txt$8A-YEAR").Text = "2019"
+sSession.findById("wnd[0]/usr/ctxt$0FLLDNR").Text = "0L"
+sSession.findById("wnd[0]/usr/ctxt$8A-VERS").Text = "100"
+sSession.findById("wnd[0]/usr/txt$8A-VON").Text = "01"
+sSession.findById("wnd[0]/usr/txt$8A-LFD").Text = "12"
+sSession.findById("wnd[0]/usr/txt$8A-BIS").Text = "12"
+sSession.findById("wnd[0]/usr/ctxt$SP-CCG").Text = "Africa_fin_bv"
+sSession.findById("wnd[0]/usr/ctxt$FL-8").Text = "297"
+sSession.findById("wnd[0]/usr/ctxt$FL-5").Text = "P2200"
+sSession.findById("wnd[0]/usr/ctxt$FL-5").SetFocus
+sSession.findById("wnd[0]/usr/ctxt$FL-5").caretPosition = 5
+sSession.findById("wnd[0]/tbar[1]/btn[8]").press
+sSession.findById("wnd[1]/tbar[0]/btn[44]").press
+
+sSession.findById("wnd[0]/usr/cntlCONTAINER/shellcont/shell").removeContent "CELL_FORMATS"
+End Sub
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    Public mFile As String
+    Public mPath As String
+Sub sSAP()
+
+    Dim wn As Window
+    Dim SapGuiAuto As Object
+    Dim aApplication As Object
+    Dim cConnection As Object
+    Dim sSession As Object
+    Set SapGuiAuto = GetObject("SAPGUI")
+    Set aApplication = SapGuiAuto.GetScriptingEngine
+    Set cConnection = aApplication.Children(0)
+    Set sSession = cConnection.Children(0)
+    mFile = ThisWorkbook.Name
+    mPath = ThisWorkbook.Path
+        sSession.findById("wnd[0]").resizeWorkingPane 165, 32, False
+        sSession.findById("wnd[0]/tbar[0]/okcd").Text = "zfipctr"
+        sSession.findById("wnd[0]").sendVKey 0
+        sSession.findById("wnd[0]/usr/txt$8A-YEAR").Text = "2019"
+        sSession.findById("wnd[0]/usr/ctxt$0FLLDNR").Text = "0L"
+        sSession.findById("wnd[0]/usr/ctxt$8A-VERS").Text = "100"
+        sSession.findById("wnd[0]/usr/txt$8A-VON").Text = "1"
+        sSession.findById("wnd[0]/usr/txt$8A-LFD").Text = "12"
+        sSession.findById("wnd[0]/usr/txt$8A-BIS").Text = "12"
+        sSession.findById("wnd[0]/usr/ctxt$SP-CCG").Text = "Africa_fin_bv"
+        sSession.findById("wnd[0]/usr/ctxt$FL-8").Text = "297"
+        sSession.findById("wnd[0]/usr/ctxt$FL-5").Text = "P2200"
+        sSession.findById("wnd[0]/usr/ctxt$FL-5").SetFocus
+        sSession.findById("wnd[0]/usr/ctxt$FL-5").caretPosition = 5
+        sSession.findById("wnd[0]/tbar[1]/btn[8]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[44]").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000012"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").hierarchyHeaderWidth = 260
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").expandNode "000012"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").topNode = "000001"
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 0
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]/usr/ctxtDY_PATH").SetFocus
+        sSession.findById("wnd[2]/usr/ctxtDY_PATH").caretPosition = 0
+        sSession.findById("wnd[2]").sendVKey 4
+        sSession.findById("wnd[3]/usr/ctxtDY_PATH").SetFocus
+        sSession.findById("wnd[3]/usr/ctxtDY_PATH").caretPosition = 0
+        sSession.findById("wnd[3]").sendVKey 4
+        sSession.findById("wnd[4]").sendVKey 4
+        sSession.findById("wnd[5]/usr/ctxtDY_PATH").Text = mPath '"\\dukes003.group.gcn.local\department-data\Finance\SAB Management Services\General\SABIFIN-19\SABFIN-Analysis\P12 F19 Dec\Africa Report\"
+        sSession.findById("wnd[5]/usr/ctxtDY_FILENAME").Text = "Africa.DAT"
+        sSession.findById("wnd[5]/usr/ctxtDY_FILENAME").caretPosition = 12
+        sSession.findById("wnd[5]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[4]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[3]/tbar[0]/btn[12]").press
+        sSession.findById("wnd[2]/tbar[0]/btn[12]").press
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]/usr/ctxtDY_PATH").SetFocus
+        sSession.findById("wnd[2]/usr/ctxtDY_PATH").caretPosition = 0
+        sSession.findById("wnd[2]").sendVKey 4
+        sSession.findById("wnd[3]/usr/ctxtDY_FILENAME").caretPosition = 6
+        sSession.findById("wnd[3]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        'CloseAPP ("Africa")
+        'For Each wn In Application.Windows
+        '    Debug.Print wn.Caption
+        'Next
+        
+        'sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[0]/tbar[1]/btn[48]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[12]").press
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 14
+        sSession.findById("wnd[1]").sendVKey 4
+        'sSession.findById("wnd[2]/usr/ctxtDY_PATH").SetFocus
+        sSession.findById("wnd[2]/usr/ctxtDY_PATH").caretPosition = 0
+        sSession.findById("wnd[2]").sendVKey 4
+        sSession.findById("wnd[3]").sendVKey 4
+        sSession.findById("wnd[4]/usr/ctxtDY_PATH").Text = Sheet2.Range("D3")
+        sSession.findById("wnd[4]/usr/ctxtDY_FILENAME").Text = "Africa"
+        sSession.findById("wnd[4]/usr/ctxtDY_FILENAME").caretPosition = 6
+        sSession.findById("wnd[4]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[3]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000013"
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 48
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").Text = "Angola"
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").caretPosition = 6
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000016"
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 48
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").Text = "Botswana"
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").caretPosition = 8
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000021"
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 50
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").Text = "Africa Hub"
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").caretPosition = 10
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000025"
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 52
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").Text = "Zimbabwe"
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").caretPosition = 8
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000029"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000033"
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 50
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").Text = "Ghana"
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").caretPosition = 5
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000038"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").expandNode "000038"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").expandNode "000039"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").topNode = "000001"
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 43
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").Text = "Kenya"
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").caretPosition = 5
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000040"
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 47
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").Text = "Kenya_P300B01133"
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").caretPosition = 16
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000041"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").collapseNode "000038"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000038"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").topNode = "000001"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000042"
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 41
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").Text = "Lesotho"
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").caretPosition = 7
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000047"
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 32
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").Text = "Malawi"
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").caretPosition = 6
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000051"
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 48
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").Text = "Mozambique"
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").caretPosition = 10
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000056"
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 31
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").Text = "Swaziland"
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").caretPosition = 9
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000060"
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 51
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").Text = "Tanzania"
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").caretPosition = 8
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000065"
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 50
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").Text = "Uganda"
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").caretPosition = 6
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").expandNode "000065"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").expandNode "000066"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000067"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").topNode = "000001"
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 48
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").Text = "Uganda_P105B01115"
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").caretPosition = 17
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000068"
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 34
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]").sendVKey 4
+        sSession.findById("wnd[3]/usr/ctxtDY_FILENAME").Text = "Uganda_P300B01115"
+        sSession.findById("wnd[3]/usr/ctxtDY_FILENAME").caretPosition = 17
+        sSession.findById("wnd[3]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").collapseNode "000065"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000065"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").topNode = "000001"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000069"
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 34
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").Text = "Zambia"
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").caretPosition = 6
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000074"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000080"
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 48
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]").sendVKey 4
+        sSession.findById("wnd[3]/usr/ctxtDY_FILENAME").Text = "Cameroun"
+        sSession.findById("wnd[3]/usr/ctxtDY_FILENAME").caretPosition = 8
+        sSession.findById("wnd[3]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000083"
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 50
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").Text = "Nigeria"
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").caretPosition = 7
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000088"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").expandNode "000083"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").expandNode "000084"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000085"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").topNode = "000001"
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 49
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").Text = "Nigeria_P300B01120"
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").caretPosition = 18
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000086"
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 37
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").Text = "Nigeria_P300B01147"
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").caretPosition = 18
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000087"
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 35
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").Text = "Nigeria_P300B01148DAT"
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").caretPosition = 18
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").collapseNode "000083"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000083"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").topNode = "000001"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000088"
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 51
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").Text = "Mauritius"
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").caretPosition = 9
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000091"
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 49
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").Text = "Namibia"
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").caretPosition = 7
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        
+End Sub
+Sub cCloseApp()
+Dim wn As Window
+    mFile = ThisWorkbook.Name
+    mPath = ThisWorkbook.Path
+    For Each wn In Application.Windows
+        If Right(wn.Caption, 3) = "DAT" Then
+            AppActivate wn.Caption
+            Windows(wn.Caption).Close
+        End If
+    Next
+End Sub
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Sub AfricaReport()
+    Dim wn As Window
+    Dim SapGuiAuto As Object
+    Dim aApplication As Object
+    Dim cConnection As Object
+    Dim sSession As Object
+    Set SapGuiAuto = GetObject("SAPGUI")
+    Set aApplication = SapGuiAuto.GetScriptingEngine
+    Set cConnection = aApplication.Children(0)
+    Set sSession = cConnection.Children(0)
+    mFile = ThisWorkbook.Name
+    mPath = ThisWorkbook.Path
+'        sSession.findById("wnd[0]").resizeWorkingPane 165, 32, False
+        sSession.findById("wnd[0]/tbar[0]/okcd").Text = "zfipctr"
+        sSession.findById("wnd[0]").sendVKey 0
+        sSession.findById("wnd[0]/usr/txt$8A-YEAR").Text = "2019" '#change as per the working year
+        sSession.findById("wnd[0]/usr/ctxt$0FLLDNR").Text = "0L"
+        sSession.findById("wnd[0]/usr/ctxt$8A-VERS").Text = "100"
+        sSession.findById("wnd[0]/usr/txt$8A-VON").Text = "1"
+        sSession.findById("wnd[0]/usr/txt$8A-LFD").Text = "12" '# reporting month -1
+        sSession.findById("wnd[0]/usr/txt$8A-BIS").Text = "12" '# reporting month -1
+        sSession.findById("wnd[0]/usr/ctxt$SP-CCG").Text = "Africa_fin_bv"
+        sSession.findById("wnd[0]/usr/ctxt$FL-8").Text = "297"
+        sSession.findById("wnd[0]/usr/ctxt$FL-5").Text = "P2200"
+        sSession.findById("wnd[0]/usr/ctxt$FL-5").SetFocus
+        sSession.findById("wnd[0]/usr/ctxt$FL-5").caretPosition = 5
+        sSession.findById("wnd[0]/tbar[1]/btn[8]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[44]").press
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000012"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").hierarchyHeaderWidth = 260
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").expandNode "000012"
+        sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").topNode = "000001"
+        
+        sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+        sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 0
+        sSession.findById("wnd[1]").sendVKey 4
+        sSession.findById("wnd[2]/usr/ctxtDY_PATH").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\"
+        sSession.findById("wnd[2]/usr/ctxtDY_FILENAME").Text = "Afirca"
+        sSession.findById("wnd[2]/usr/ctxtDY_FILE_ENCODING").SetFocus
+        sSession.findById("wnd[2]/usr/ctxtDY_FILE_ENCODING").caretPosition = 0
+        sSession.findById("wnd[2]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        sSession.findById("wnd[2]/usr/btnSPOP-VAROPTION1").press
+        'Call winW
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000013"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Angola.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000016"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Botswana.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 60
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000021"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\AfricaHub.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000025"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Zimbabwe.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000029"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Ethiopia.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000029"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").expandNode "000029"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").expandNode "000030"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000031"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\EthiopiaP105B01151.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").topNode = "000002"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000032"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\EthiopiaP300B01151.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").collapseNode "000030"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000030"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").topNode = "000002"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").collapseNode "000029"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000029"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").topNode = "000002"
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000033"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Ghana.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000038"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Kenya.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000038"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").expandNode "000038"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").expandNode "000039"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000040"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\KenyaP300B01133.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").topNode = "000002"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000041"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\KenyaP105B01106.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").collapseNode "000039"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000039"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").topNode = "000002"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").collapseNode "000038"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000038"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").topNode = "000002"
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000042"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Lesotho.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000047"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Malawi.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000051"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Mozambique.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000056"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Swaziland.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000060"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Tanzania.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000065"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Uganda.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").expandNode "000065"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").expandNode "000066"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000067"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").topNode = "000001"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\UgandaP105B01115.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000068"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\UgandaP300B01115.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").collapseNode "000065"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").collapseNode "000066"
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000069"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Zambia.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000074"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\NationalZambia.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000080"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Cameroun.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000083"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Nigeria.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").expandNode "000083"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000084"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").topNode = "000001"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").expandNode "000084"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000085"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\NigeriaP300B01120.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").topNode = "000013"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000086"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\NigeriaP300B01147.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000086"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000087"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\NigeriaP300B01148.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").collapseNode "000084"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000084"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").topNode = "000013"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").collapseNode "000083"
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000083"
+'sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").topNode = "000013"
+'
+'sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Nigeria1147.DAT"
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+'sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+'
+'sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000084"
+'sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Nigeria1148.DAT"
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+'sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+'
+'sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").topNode = "000001"
+'sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Mauritius.DAT"
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+'sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+'
+'sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").expandNode "000084"
+'sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Namibia.DAT"
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+'sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+'
+'sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000085"
+'sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Angola.DAT"
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+'sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+'
+'sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").topNode = "000001"
+'sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Angola.DAT"
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+'sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+'
+'sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000086"
+'sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Angola.DAT"
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+'sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+'
+'sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000087"
+'sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Angola.DAT"
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+'sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+'
+'sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").collapseNode "000084"
+'sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Angola.DAT"
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+'sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+'
+'sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000084"
+'sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Angola.DAT"
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+'sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+'
+'sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").topNode = "000001"
+'sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Angola.DAT"
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+'sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+'
+'sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").collapseNode "000083"
+'sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Angola.DAT"
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+'sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+'
+'sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000083"
+'sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Angola.DAT"
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+'sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+'
+'sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").topNode = "000001"
+'sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Angola.DAT"
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+'sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+'sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000088"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Mauritius.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+
+sSession.findById("wnd[0]/shellcont/shell/shellcont[2]/shell").selectedNode = "000091"
+sSession.findById("wnd[0]/mbar/menu[0]/menu[3]").Select
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").Text = "\\saps388\Profiles\PGANGULY\Documents\MacroTest\Namibia.DAT"
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").SetFocus
+sSession.findById("wnd[1]/usr/ctxtLGRWO-OUT_FILE").caretPosition = 58
+sSession.findById("wnd[1]/tbar[0]/btn[0]").press
+        
+        
+End Sub
+Sub winW()
+    Dim wshSheel As Object
+    Set wshSheel = CreateObject("WScript.shell")
+    wshSheel.AppActivate ("Africa.DAT")
+    wshSheel.SendKeys "%{F4}"
+End Sub
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
