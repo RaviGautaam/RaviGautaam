@@ -1,0 +1,604 @@
+Sub formating()
+
+Dim macroFile As String
+Dim macroPath As String
+Dim ECC_baseWB As Workbook
+Dim ECC_workingWB As Workbook
+Dim rngLookup As Range
+
+macroFile = ThisWorkbook.Name
+macroPath = ThisWorkbook.Path
+gGroup = Workbooks(macroFile).Worksheets("Utility").Range("C2").Value
+baseECC = Application.GetOpenFilename("Excel Files(*.xls*),*.xls*", Title:="(1)Select ECC " & gGroup & " base data File")
+If baseECC <> "False" Then
+Workbooks.Open filename:=baseECC
+Set ECC_baseWB = ActiveWorkbook
+Else
+MsgBox "Your did not selected the requested file !!!", vbCritical
+Exit Sub
+End If
+
+ECC_working = Application.GetOpenFilename("Excel Files(*.xls*),*.xls*", Title:="(2)Select ECC  " & gGroup & " Working File")
+If ECC_working <> "False" Then
+Workbooks.Open filename:=ECC_working
+Set ECC_workingWB = ActiveWorkbook
+Else
+MsgBox "Your did not selected the requested file !!!", vbCritical
+Exit Sub
+End If
+
+ECC_baseWB.Activate
+ActiveSheet.AutoFilterMode = False
+
+Range("I1:I60000").Clear
+
+x_LR = Range("A" & Rows.Count).End(xlUp).Row
+If Range("F1").Value = "HFM Code" Then
+    If gGroup = "FIN Group" Then
+    Range("A1:Z" & x_LR).AutoFilter field:=6, Criteria1:="1360", Operator:=xlFilterValues
+    End If
+    If gGroup = "PLC Group" Then
+    Range("A1:Z" & x_LR).AutoFilter field:=6, Criteria1:="1365", Operator:=xlFilterValues
+    End If
+    
+    nd_LR = Range("A" & Rows.Count).End(xlUp).Row
+    If nd_LR >= 2 Then Range("F2:F" & nd_LR).SpecialCells(xlCellTypeVisible).EntireRow.Delete
+    ActiveSheet.AutoFilterMode = False
+    
+    Range("A1:Z" & x_LR).AutoFilter field:=6, Criteria1:="", Operator:=xlFilterValues
+    nd_LR = Range("A" & Rows.Count).End(xlUp).Row
+    If nd_LR >= 2 Then Range("F2:F" & nd_LR).SpecialCells(xlCellTypeVisible).EntireRow.Delete
+    ActiveSheet.AutoFilterMode = False
+    
+Else
+    MsgBox "Data Format is changed because Heading ""HFM Code"" not found in Column ""F""", vbCritical
+    Exit Sub
+End If
+
+ECC_baseWB.Activate
+x_LR = Range("A" & Rows.Count).End(xlUp).Row
+Range("I1").Value = "*"
+Range("I2:I" & x_LR).Value = "=LEFT(B2,1)"
+Range("A1:Z" & x_LR).AutoFilter field:=9, Criteria1:="1", Operator:=xlFilterValues
+
+nd_LR = Range("A" & Rows.Count).End(xlUp).Row
+If nd_LR >= 2 Then Range("F2:F" & nd_LR).SpecialCells(xlCellTypeVisible).EntireRow.Delete
+ActiveSheet.AutoFilterMode = False
+
+Workbooks(macroFile).Activate
+Workbooks(macroFile).Worksheets("Utility").Select
+accLR = Range("E" & Rows.Count).End(xlUp).Row
+
+For i = 4 To accLR
+    Workbooks(macroFile).Activate
+    Workbooks(macroFile).Worksheets("Utility").Select
+    aAccNo = Range("E" & i).Value
+
+    ECC_baseWB.Activate
+    x_LR = Range("A" & Rows.Count).End(xlUp).Row
+    Range("A1:Z" & x_LR).AutoFilter field:=2, Criteria1:="=" & aAccNo, Operator:=xlFilterValues
+    nd_LR = Range("A" & Rows.Count).End(xlUp).Row
+    If nd_LR >= 2 Then Range("F2:F" & nd_LR).SpecialCells(xlCellTypeVisible).EntireRow.Delete
+    ActiveSheet.AutoFilterMode = False
+Next
+ECC_baseWB.Activate
+x_LR = Range("A" & Rows.Count).End(xlUp).Row
+Range("A1:Z" & x_LR).AutoFilter field:=4, Criteria1:="*FV*", Operator:=xlFilterValues
+nd_LR = Range("A" & Rows.Count).End(xlUp).Row
+If nd_LR >= 2 Then Range("F2:F" & nd_LR).SpecialCells(xlCellTypeVisible).EntireRow.Delete
+ActiveSheet.AutoFilterMode = False
+
+x_LR = Range("A" & Rows.Count).End(xlUp).Row
+Range("A1:Z" & x_LR).AutoFilter field:=5, Criteria1:="0", Operator:=xlFilterValues
+nd_LR = Range("A" & Rows.Count).End(xlUp).Row
+If nd_LR >= 2 Then Range("F2:F" & nd_LR).SpecialCells(xlCellTypeVisible).EntireRow.Delete
+ActiveSheet.AutoFilterMode = False
+
+x_LR = Range("A" & Rows.Count).End(xlUp).Row
+Range("A1:Z" & x_LR).AutoFilter field:=5, Criteria1:="", Operator:=xlFilterValues
+nd_LR = Range("A" & Rows.Count).End(xlUp).Row
+If nd_LR >= 2 Then Range("F2:F" & nd_LR).SpecialCells(xlCellTypeVisible).EntireRow.Delete
+ActiveSheet.AutoFilterMode = False
+
+x_LR = Range("A" & Rows.Count).End(xlUp).Row
+Range("A1:Z" & x_LR).AutoFilter field:=3, Criteria1:="", Operator:=xlFilterValues
+nd_LR = Range("A" & Rows.Count).End(xlUp).Row
+If nd_LR >= 2 Then Range("F2:F" & nd_LR).SpecialCells(xlCellTypeVisible).EntireRow.Delete
+ActiveSheet.AutoFilterMode = False
+
+ECC_workingWB.Activate
+ECC_workingWB.Worksheets("ECC Download").Select
+Set rngLookup = ECC_workingWB.Worksheets("ECC Download").Range("L2:L60000")
+
+ECC_baseWB.Activate
+Range("I2:I60000").Clear
+
+x_LR = Range("A" & Rows.Count).End(xlUp).Row
+On Error Resume Next
+For St = 2 To x_LR
+    Range("I" & St).Value = Application.WorksheetFunction.VLookup(Range("C" & St).Value, rngLookup, 1, False)
+Next
+
+Range("A1:Z" & x_LR).AutoFilter field:=9, Criteria1:="", Operator:=xlFilterValues
+nd_LR = Range("A" & Rows.Count).End(xlUp).Row
+If nd_LR >= 2 Then Range("F2:F" & nd_LR).SpecialCells(xlCellTypeVisible).EntireRow.Delete
+ActiveSheet.AutoFilterMode = False
+
+ECC_workingWB.Activate
+
+ECC_workingWB.Worksheets("ECC Download").Select
+ActiveSheet.AutoFilterMode = False
+
+ecc_LR = Range("C" & Rows.Count).End(xlUp).Row
+Range("C2:I" & ecc_LR).ClearContents
+
+ECC_baseWB.Activate
+baseDataLR = Range("A" & Rows.Count).End(xlUp).Row
+Range("A2:G" & baseDataLR).Copy
+
+ECC_workingWB.Activate
+ECC_workingWB.Worksheets("ECC Download").Select
+Range("C2").PasteSpecial xlPasteValues
+Range("A3:A60000").Clear
+
+ecc_LR = Range("C" & Rows.Count).End(xlUp).Row
+Range("A2:A" & ecc_LR).FillDown
+
+
+lLR = Range("A" & Rows.Count).End(xlUp).Row
+For x = 2 To lLR
+    l_LEN = Len(Range("C" & x).Value)
+    If l_LEN = 1 Then
+        Range("C" & x).Value = "'000" & Range("C" & x).Value
+    End If
+    If l_LEN = 2 Then
+        Range("C" & x).Value = "'00" & Range("C" & x).Value
+    End If
+    If l_LEN = 3 Then
+        Range("C" & x).Value = "'0" & Range("C" & x).Value
+    End If
+Next
+ECC_baseWB.Activate
+ECC_baseWB.Close
+ECC_workingWB.Activate
+ECC_workingWB.Worksheets("Check").Select
+
+End Sub
+###################################################################################################################################################################
+Sub working()
+Dim macroFile As String
+Dim macroPath As String
+
+Dim FIN_workbook As Workbook
+Dim FIN_MacorWorkbook As Workbook
+
+Dim PLC_workbook As Workbook
+Dim PLC_MacorWorkbook As Workbook
+
+macroFile = ThisWorkbook.Name
+macroPath = ThisWorkbook.Path
+
+Workbooks(macroFile).Activate
+On Error Resume Next
+FIN_WB = Application.GetOpenFilename("Excel Files(*.xls*),*.xls*", Title:="(1)Select FIN Working File")
+If FIN_WB <> "False" Then
+    Workbooks.Open filename:=FIN_WB
+    Set FIN_workbook = ActiveWorkbook
+    For i = 1 To FIN_workbook.Worksheets.Count
+        Worksheets(i).Select
+        If Range("A4").Value = "" And Range("B4").Value = "TP" And Left(Range("C4").Value, 2) = "TP" Then
+            ActiveSheet.Name = Range("C4").Value
+        End If
+    Next
+Else
+    MsgBox "Your did not selected the requested file !!!", vbCritical
+    Exit Sub
+End If
+
+FIN_mWB = Application.GetOpenFilename("Excel Files(*.xls*),*.xls*", Title:="(2)Select FIN Macro Working File")
+If FIN_mWB <> "False" Then
+    Workbooks.Open filename:=FIN_mWB
+    Set FIN_MacorWorkbook = ActiveWorkbook
+Else
+    MsgBox "Your did not selected the requested file !!!", vbCritical
+    Exit Sub
+End If
+
+PLC_WB = Application.GetOpenFilename("Excel Files(*.xls*),*.xls*", Title:="(3)Select PLC Working File")
+If PLC_WB <> "False" Then
+    Workbooks.Open filename:=PLC_WB
+    Set PLC_workbook = ActiveWorkbook
+    For i = 1 To PLC_workbook.Worksheets.Count
+        Worksheets(i).Select
+        If Range("A4").Value = "" And Range("B4").Value = "TP" And Left(Range("C4").Value, 2) = "TP" Then
+            ActiveSheet.Name = Range("C4").Value
+        End If
+    Next
+Else
+    MsgBox "Your did not selected the requested file !!!", vbCritical
+    Exit Sub
+End If
+
+PLC_mWB = Application.GetOpenFilename("Excel Files(*.xls*),*.xls*", Title:="(4)Select PLC Macro Working File")
+If PLC_mWB <> "False" Then
+    Workbooks.Open filename:=PLC_mWB
+    Set PLC_MacorWorkbook = ActiveWorkbook
+Else
+    MsgBox "Your did not selected the requested file !!!", vbCritical
+    Exit Sub
+End If
+
+Workbooks(macroFile).Activate
+Workbooks(macroFile).Worksheets("Email_distribution_list").Select
+
+TP_lr = Range("B" & Rows.Count).End(xlUp).Row
+For c = 2 To TP_lr
+Workbooks(macroFile).Activate
+Workbooks(macroFile).Worksheets("Email_distribution_list").Select
+    If Range("C" & c).Value = "Yes" Then
+        TPname = Workbooks(macroFile).Worksheets("Email_distribution_list").Range("B" & c).Value
+        
+        MkDir macroPath & "\" & TPname
+        
+        Dim xDir As String
+        Dim fFso As Object
+        Set fFso = CreateObject("scripting.filesystemobject")
+
+        'sSourceDir = macroPath & "\" & "1. Cover letter Intercompany.pdf" '#Copy Cover Letter
+        DestiDir = macroPath & "\" & TPname & "\"
+        'fFso.CopyFile (sSourceDir & sFile), DestiDir, True
+                
+        '# working start for FIN Group
+        FIN_workbook.Activate
+        For sht = 1 To FIN_workbook.Worksheets.Count
+            Worksheets(sht).Select
+            If ActiveSheet.Name = TPname Then
+                    Worksheets(sht).Select
+                    Range("A1:L160").Select
+                    Range("A1:L160").ExportAsFixedFormat Type:=xlTypePDF, _
+                    filename:=macroPath & "\" & TPname & "\3." & TPname & "_F", _
+                    Quality:=xlQualityStandard, _
+                    IncludeDocProperties:=True, _
+                    IgnorePrintAreas:=False, _
+                    OpenAfterPublish:=False
+                        
+                    FIN_MacorWorkbook.Activate
+                    If Range("A1").Value <> "" Then
+                        Range("A1").Select
+                        Range("A1").EntireRow.Insert
+                        Range("A1").Select
+                        Range("A1").EntireRow.Insert
+                        Range("A1").Select
+                        Range("A1").EntireRow.Insert
+                        Range("A1").Select
+                        Range("A1").EntireRow.Insert
+                    End If
+                    ActiveSheet.AutoFilterMode = False
+                    fin_LR = Range("A" & Rows.Count).End(xlUp).Row
+                    For x = 5 To fin_LR
+                        Range("M" & x).Select
+                        If Range("M" & x).Value = "Tr.Prt" And Range("M" & x + 1).Value = TPname And Range("M" & x - 3).Value <> TPname Then
+                            st_R = ActiveCell.Row
+                        End If
+                        If Range("M" & x).Value = TPname Then
+                            ed_R = ActiveCell.Row
+                        End If
+                    Next
+                    'MsgBox "hi"
+                    With ActiveSheet.PageSetup
+                        '.PrintTitleRows = "$3:$3"
+                        '.PrintTitleColumns = "$B:$B"
+                        .Orientation = xlLandscape
+                        .Zoom = False
+                        .FitToPagesWide = 1
+                        .FitToPagesTall = 1
+                    End With
+                    Range("A" & st_R & ":M" & ed_R + 1).Select
+                    Range("A" & st_R & ":M" & ed_R + 1).ExportAsFixedFormat Type:=xlTypePDF, _
+                    filename:=macroPath & "\" & TPname & "\4." & TPname & "_FB", _
+                    Quality:=xlQualityStandard, _
+                    IncludeDocProperties:=True, _
+                    IgnorePrintAreas:=False, _
+                    OpenAfterPublish:=False
+                    FIN_MacorWorkbook.Activate
+                    ActiveSheet.AutoFilterMode = False
+                    Range("A1").Select
+                    st_R = Nothing
+                    ed_R = Nothing
+            End If
+        Next
+        '# working End for FIN Group
+        '# working start for PLC Group
+        PLC_workbook.Activate
+        For sht = 1 To PLC_workbook.Worksheets.Count
+            Worksheets(sht).Select
+            If ActiveSheet.Name = TPname Then
+                    Worksheets(sht).Select
+                    Range("A1:L221").Select
+                    Range("A1:L221").ExportAsFixedFormat Type:=xlTypePDF, _
+                    filename:=macroPath & "\" & TPname & "\1." & TPname & "_P", _
+                    Quality:=xlQualityStandard, _
+                    IncludeDocProperties:=True, _
+                    IgnorePrintAreas:=False, _
+                    OpenAfterPublish:=False
+                        
+                    PLC_MacorWorkbook.Activate
+                    If Range("A1").Value <> "" Then
+                        Range("A1").Select
+                        Range("A1").EntireRow.Insert
+                        Range("A1").Select
+                        Range("A1").EntireRow.Insert
+                        Range("A1").Select
+                        Range("A1").EntireRow.Insert
+                        Range("A1").Select
+                        Range("A1").EntireRow.Insert
+                    End If
+                    ActiveSheet.AutoFilterMode = False
+                    fin_LR = Range("A" & Rows.Count).End(xlUp).Row
+                    For x = 5 To fin_LR
+                        Range("M" & x).Select
+                        If Range("M" & x).Value = "Tr.Prt" And Range("M" & x + 1).Value = TPname And Range("M" & x - 3).Value <> TPname Then
+                            st_R = ActiveCell.Row
+                        End If
+                        If Range("M" & x).Value = TPname Then
+                            ed_R = ActiveCell.Row
+                        End If
+                    Next
+                    'MsgBox "hi"
+                    With ActiveSheet.PageSetup
+                        '.PrintTitleRows = "$3:$3"
+                        '.PrintTitleColumns = "$B:$B"
+                        .Orientation = xlLandscape
+                        .Zoom = False
+                        .FitToPagesWide = 1
+                        .FitToPagesTall = 1
+                    End With
+                    Range("A" & st_R & ":M" & ed_R + 1).Select
+                    Range("A" & st_R & ":M" & ed_R + 1).ExportAsFixedFormat Type:=xlTypePDF, _
+                    filename:=macroPath & "\" & TPname & "\2." & TPname & "_PB", _
+                    Quality:=xlQualityStandard, _
+                    IncludeDocProperties:=True, _
+                    IgnorePrintAreas:=False, _
+                    OpenAfterPublish:=False
+                    PLC_MacorWorkbook.Activate
+                    ActiveSheet.AutoFilterMode = False
+                    Range("A1").Select
+                    st_R = Nothing
+                    ed_R = Nothing
+            End If
+        Next
+        '# working End for PLC Group
+        Call CountFiles(TPname, DestiDir)
+        Workbooks(macroFile).Activate
+        Workbooks(macroFile).Worksheets("Email_distribution_list").Range("I" & c).Value = DestiDir & TPname & ".pdf"
+        Workbooks(macroFile).Worksheets("Email_distribution_list").Range("J" & c).Value = DestiDir & TPname & "_FIN.pdf"
+        Workbooks(macroFile).Worksheets("Email_distribution_list").Range("K" & c).Value = DestiDir & TPname & "_PLC.pdf"
+        
+        ActiveSheet.Hyperlinks.Add anchor:=Range("I" & c), Address:=Range("I" & c).Value, TextToDisplay:=Range("I" & c).Value
+        ActiveSheet.Hyperlinks.Add anchor:=Range("J" & c), Address:=Range("J" & c).Value, TextToDisplay:=Range("J" & c).Value
+        ActiveSheet.Hyperlinks.Add anchor:=Range("K" & c), Address:=Range("K" & c).Value, TextToDisplay:=Range("K" & c).Value
+    End If
+Next
+FIN_workbook.Close
+FIN_MacorWorkbook.Close
+PLC_workbook.Close
+PLC_MacorWorkbook.Close
+End Sub
+########################################################################################################################################################################
+Sub CountFiles(ByVal tTP As String, ByVal strDir As String)
+    'Dim strDir As String
+    Dim fso As Object
+    Dim objFiles As Object
+    Dim obj As Object
+    Dim lngFileCount As Long
+    Dim fn(5) As String
+    'Dim chk(5) As String
+    Dim gPDDOC As AcroPDDoc
+    Dim mrgPDF As AcroPDDoc
+        
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    Set objFiles = fso.GetFolder(strDir).Files
+    
+    lngFileCount = objFiles.Count
+    'MsgBox lngFileCount
+    
+    For Each obj In objFiles
+        i = i + 1
+        fn(i) = obj.Name
+    Next obj
+    sFile = strDir & tTP & ".pdf"
+    For j = 0 To 4
+        If Not fso.FileExists(sFile) Then
+            Set gPDDOC = CreateObject("AcroExch.PDDoc")
+            chk = gPDDOC.Open(ThisWorkbook.Path & "\Cover letter Intercompany_PLC.pdf")
+            savemergefile = gPDDOC.Save(1, sFile)
+        Else
+            Set gPDDOC = CreateObject("AcroExch.PDDoc")
+            Set mrgPDF = CreateObject("AcroExch.PDDoc")
+            chk = gPDDOC.Open(strDir & fn(j))
+            mrg = mrgPDF.Open(sFile)
+            mergefile = mrgPDF.InsertPages(mrgPDF.GetNumPages - 1, gPDDOC, 0, gPDDOC.GetNumPages, 0)
+            savemergefile = mrgPDF.Save(1, sFile)
+        End If
+    Next
+        
+    sPLCFile = strDir & tTP & "_PLC" & ".pdf"
+    For j = 0 To 4
+        If Not fso.FileExists(sPLCFile) Then
+            Set gPDDOC = CreateObject("AcroExch.PDDoc")
+            chk = gPDDOC.Open(ThisWorkbook.Path & "\Cover letter Intercompany_PLC.pdf")
+            savemergefile = gPDDOC.Save(1, sPLCFile)
+        Else
+            If fn(j) = "1." & tTP & "_P.pdf" Or fn(j) = "2." & tTP & "_PB.pdf" Then
+                Set gPDDOC = CreateObject("AcroExch.PDDoc")
+                Set mrgPDF = CreateObject("AcroExch.PDDoc")
+                chk = gPDDOC.Open(strDir & fn(j))
+                mrg = mrgPDF.Open(sPLCFile)
+                mergefile = mrgPDF.InsertPages(mrgPDF.GetNumPages - 1, gPDDOC, 0, gPDDOC.GetNumPages, 0)
+                savemergefile = mrgPDF.Save(1, sPLCFile)
+            End If
+        End If
+    Next
+        
+    sFinFile = strDir & tTP & "_FIN" & ".pdf"
+    For j = 0 To 4
+        If Not fso.FileExists(sFinFile) Then
+            Set gPDDOC = CreateObject("AcroExch.PDDoc")
+            chk = gPDDOC.Open(ThisWorkbook.Path & "\Cover letter Intercompany_FIN.pdf")
+            savemergefile = gPDDOC.Save(1, sFinFile)
+        Else
+            If fn(j) = "3." & tTP & "_F.pdf" Or fn(j) = "4." & tTP & "_FB.pdf" Then
+                Set gPDDOC = CreateObject("AcroExch.PDDoc")
+                Set mrgPDF = CreateObject("AcroExch.PDDoc")
+                chk = gPDDOC.Open(strDir & fn(j))
+                mrg = mrgPDF.Open(sFinFile)
+                mergefile = mrgPDF.InsertPages(mrgPDF.GetNumPages - 1, gPDDOC, 0, gPDDOC.GetNumPages, 0)
+                savemergefile = mrgPDF.Save(1, sFinFile)
+            End If
+        End If
+    Next
+    Set objFiles = Nothing
+    Set fso = Nothing
+    Set obj = Nothing
+
+End Sub
+
+######################################################################################################################################################################
+Option Explicit
+#If VBA7 Then
+    Private Declare PtrSafe Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" _
+    (ByVal hwnd As Long, ByVal IpOperation As String, ByVal IpFile As String, _
+    ByVal IpParameters As String, ByVal IpDirectory As String, ByVal nShowCmd As Long) As Long
+#Else
+    Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" _
+    (ByVal hwnd As Long, ByVal IpOperation As String, ByVal IpFile As String, _
+    ByVal IpParameters As String, ByVal IpDirectory As String, ByVal nShowCmd As Long) As Long
+#End If
+
+Public fPath As String
+Public IsSubFolder As Boolean
+Public iRow As Long
+Public fso As Scripting.FileSystemObject
+Public SourceFolder As Scripting.folder, SubFolder As Scripting.folder
+Public FileItem As Scripting.File
+Public IsFileTypeExists As Boolean
+Public bMailroomFile As String
+Public BmailRoom As Workbook
+Public sStart As Integer
+Public sht As Integer
+Public mFile As String
+Public mPath As String
+
+Public Sub ListFilesInFolder(SourceFolder As Scripting.folder, IncludeSubfolders As Boolean)
+On Error Resume Next
+For Each FileItem In SourceFolder.Files
+' display file properties
+        Cells(iRow, 1).Formula = iRow - 1
+        Cells(iRow, 7).Formula = FileItem.Name
+        Cells(iRow, 8).Formula = FileItem.Path
+        Cells(iRow, 9).Formula = Int(FileItem.Size / 1024)
+        Cells(iRow, 10).Formula = FileItem.Type
+        Cells(iRow, 11).Formula = FileItem.DateLastModified
+        Cells(iRow, 12).Select
+        Selection.Hyperlinks.Add anchor:=Selection, Address:= _
+        FileItem.Path, TextToDisplay:="Click Here to Open"
+        Cells(iRow, 13).Formula = FileItem.ParentFolder.Name
+        iRow = iRow + 1 ' next row number
+        Next FileItem
+        
+        If IncludeSubfolders Then
+            For Each SubFolder In SourceFolder.SubFolders
+                ListFilesInFolder SubFolder, True
+                Next SubFolder
+            End If
+            
+            Set FileItem = Nothing
+            Set SourceFolder = Nothing
+            Set fso = Nothing
+    End Sub
+Sub ClearResult()
+ActiveWorkbook.Sheets("Config").Select
+If Range("A1") <> "" Then
+Range("A1").Select
+Range(Selection, Selection.End(xlDown)).Select
+Range(Selection, Selection.End(xlToRight)).Select
+Range(Selection.Address).Delete
+End If
+Range("A1").Select
+End Sub
+Sub SendEMail(ByVal attPath As String, ByVal sendTO As String, ByVal subTP As String)
+Dim olApp As Object
+Dim olMail As Object
+Dim rng As Range
+'TurnAutoYesOn
+Set olApp = CreateObject("Outlook.Application")
+Set olMail = olApp.CreateItem(0)
+Workbooks(mFile).Activate
+Workbooks(mFile).Sheets("Email").Select
+Set rng = Workbooks(mFile).Sheets("Email").Range("B7")
+
+On Error Resume Next
+
+'BmailRoom.Activate
+'BmailRoom.Sheets(sht).Select
+
+With olMail
+.SentOnBehalfOfName = Workbooks(mFile).Sheets("Email").Range("C2").Value
+.To = sendTO
+.CC = ActiveWorkbook.Sheets("Email").Range("C4").Value
+.Subject = ActiveWorkbook.Sheets("Email").Range("C5").Value & subTP
+.Body = rng
+.Attachments.Add attPath
+.ReadReceiptRequested = True
+'.Display
+.Save
+'.Close olPromtForSave
+'.Application.Wait (Now + TimeValue("0:00:03"))
+'.Application.SendKeys "%s"
+'.Send
+End With
+'TurnOffAutoYes
+On Error GoTo 0
+Set olMail = Nothing
+Set olApp = Nothing
+End Sub
+
+Sub Send_Email()
+Dim cCount As Integer
+Dim att_Path As String
+Dim mail_lr As Integer
+Dim tTO As String
+Dim tpCode As String
+mFile = ThisWorkbook.Name
+mPath = ThisWorkbook.Path
+Workbooks(mFile).Activate
+Workbooks(mFile).Worksheets("Email_distribution_list").Select
+mail_lr = Range("B" & Rows.Count).End(xlUp).Row
+
+For cCount = 2 To mail_lr
+    If Workbooks(mFile).Worksheets("Email_distribution_list").Range("C" & cCount).Value = "Yes" Then
+        tTO = Workbooks(mFile).Worksheets("Email_distribution_list").Range("H" & cCount).Value
+        att_Path = Workbooks(mFile).Worksheets("Email_distribution_list").Range("I" & cCount).Value
+        tpCode = Workbooks(mFile).Worksheets("Email_distribution_list").Range("B" & cCount).Value
+        Call SendEMail(att_Path, tTO, tpCode)
+    End If
+Next
+
+End Sub
+
+
+Sub Sending(sBody As String, sSubj As String, sRecip As String, sAtta As String, sFrom As String)
+Dim sURL As String
+sURL = "mailto:" & sRecip & "?subject=" & sSubj & "&body=" & sBody & "&attachments=" & sAtta
+'Start the email clien with the function above
+
+ShellExecute 0&, vbNullString, sURL, vbNullString, vbNullString, vbNormalFocus
+Application.Wait (Now + TimeValue("0:00:03"))
+Application.SendKeys "%s"
+End Sub
+
+
+
+
+
+
