@@ -1,0 +1,116 @@
+Sub e_mail()
+Dim rRange As Range
+Dim mName  As String
+Dim mPath As String
+Dim HTMLBody_(11) As Variant
+Dim objMail As Object
+Dim objMItem As Object
+Dim dashBord_wb As Workbook
+
+mName = ThisWorkbook.Name
+mPath = ThisWorkbook.Path
+myTo = Workbooks(mName).Worksheets("E_mail Macro").Range("C3").Value
+myCC = Workbooks(mName).Worksheets("E_mail Macro").Range("C4").Value
+mySbj = Workbooks(mName).Worksheets("E_mail Macro").Range("C5").Value
+myBdy_st = Workbooks(mName).Worksheets("E_mail Macro").Range("C6").Value
+myBdy_ed = Workbooks(mName).Worksheets("E_mail Macro").Range("C7").Value
+
+'Workbooks.Open filename:=mPath & "\" & "Covance.xlsx"
+Set dashBord_wb = Workbooks(mName)
+
+dashBord_wb.Activate
+Worksheets("Summary").Select
+end_row = Range("F" & Rows.Count).End(xlUp).Row
+
+Set rRange = Worksheets("Final Summary").Range("B2:O" & end_row).SpecialCells(xlCellTypeVisible)
+Set objMail = CreateObject("Outlook.Application")
+Set objMItem = objMail.CreateItem(0)
+
+Worksheets("Graph").Select
+
+For ch = 1 To ActiveSheet.ChartObjects.Count
+    thisCharName = ActiveSheet.ChartObjects(ch).Name
+    ChartName = Environ$("temp") & "\" & thisCharName & ".gif"
+    
+    ActiveWorkbook.Worksheets("Graph").ChartObjects(thisCharName).Chart.Export filename:=ChartName, FilterName:="GIF"
+    HTMLBody_(ch) = "<img src=" & "'" & ChartName & "'> "
+    Workbooks(mName).Worksheets("E_mail Macro").Range("J" & ch).Value = ChartName
+Next
+
+    
+With objMItem
+        .To = myTo
+        .CC = myCC
+        .Subject = mySbj
+        .htmlbody = myBdy_st & "<p>" & RangetoHTML(rRange) & "<p>" & HTMLBody_(1) & "<p>" & "<p>" & HTMLBody_(2) & "<p>" & "<p>" & HTMLBody_(3) & "<p>" & "<br>" & myBdy_ed
+        '.Attachments.Add (mPath & "\" & "Covance.xlsx")
+        .Display
+End With
+    'dashBord_wb.Close
+    'Now delete the chart image from the temp folder
+
+    For a = 1 To 3
+        Kill Workbooks(mName).Worksheets("E_mail Macro").Range("J" & a).Value
+        
+    Next
+    Workbooks(mName).Activate
+    Worksheets("E_mail Macro").Range("J1:J500").clear
+    'Release memory.
+    Set objMail = Nothing
+    Set objMItem = Nothing
+    
+End Sub
+Function RangetoHTML(rRange As Range)
+' By Ron de Bruin.
+    Dim FSO As Object
+    Dim ts As Object
+    Dim TempFile As String
+    Dim TempWB As Workbook
+
+    TempFile = Environ$("temp") & "/" & Format(Now, "dd-mm-yy h-mm-ss") & ".htm"
+
+    'Copy the range and create a new workbook to past the data in
+    rRange.Copy
+    Set TempWB = Workbooks.Add(1)
+    With TempWB.Sheets(1)
+        .Cells(1).PasteSpecial Paste:=8
+        .Cells(1).PasteSpecial xlPasteValues, , False, False
+        .Cells(1).PasteSpecial xlPasteFormats, , False, False
+        .Cells(1).Select
+        Application.CutCopyMode = False
+        On Error Resume Next
+        .DrawingObjects.Visible = True
+        .DrawingObjects.Delete
+        On Error GoTo 0
+    End With
+
+    'Publish the sheet to a htm file
+    With TempWB.PublishObjects.Add( _
+         SourceType:=xlSourceRange, _
+         filename:=TempFile, _
+         Sheet:=TempWB.Sheets(1).Name, _
+         Source:=TempWB.Sheets(1).UsedRange.Address, _
+         HtmlType:=xlHtmlStatic)
+        .Publish (True)
+    End With
+
+    'Read all data from the htm file into RangetoHTML
+    Set FSO = CreateObject("Scripting.FileSystemObject")
+    Set ts = FSO.GetFile(TempFile).OpenAsTextStream(1, -2)
+    RangetoHTML = ts.ReadAll
+    ts.Close
+    RangetoHTML = Replace(RangetoHTML, "align=center x:publishsource=", "align=left x:publishsource=")
+
+    'Close TempWB
+    TempWB.Close savechanges:=False
+
+    'Delete the htm file we used in this function
+    Kill TempFile
+
+    Set ts = Nothing
+    Set FSO = Nothing
+    Set TempWB = Nothing
+End Function
+
+
+
